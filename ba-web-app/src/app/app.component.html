@@ -1,0 +1,386 @@
+<div class="container-fluid"> 
+  <!-- Modal -->
+  <div class="modal fade" id="signin" role="dialog">
+    <div class="modal-dialog"> 
+      
+      <!-- Modal content-->
+      
+      <div class="row text-center">
+        <div class="container modal-content signin_social" id="signin_popup ">
+          <div class="row">
+            <div class="col-12 col-lg-6 order-lg-1 order-12 text-center left_top">
+              <h3 class="text-center">Sign in with</h3>
+              <button type="button" class="btn1 default"><i class="fa fa-facebook-f float-left"></i>Connect with Facebook</button>
+              <button type="button" class="btn1 default" (click)=google()><i class="fa fa-google-plus float-left"></i>Connect with Google</button>
+              <button type="button" class="btn1 default"><i class="fa fa-windows float-left"></i>Connect with Microsoft</button>
+            </div>
+            <div class="col-12 col-lg-6  order-lg-12 order-1 right_top">
+              <form [formGroup]="loginForm">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2>Sign in</h2>
+                <div class="form-group">
+                  <input type="email" class="form-control" required formControlName="email"  placeholder="Enter your Email ID">
+                  <div *ngIf="loginForm.controls['email'].errors && !loginForm.controls['email'].pristine" class="error-msg">
+                      <div [hidden]="!loginForm.controls['email'].errors.required">Email is required.</div>
+                      <div [hidden]="!loginForm.controls['email'].errors.patternInvalid">Email is invalid.</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                  <input type="password" class="form-control" formControlName="password" placeholder="Password" >
+                </div> 
+               
+                <div *ngIf="errorMsgLogin" class="error-msg">
+                  {{errorMsgLogin}}
+                </div>
+                <button type="submit" (click)="onSubmitLogin()" class="signinbtn" >SIGN IN</button>
+              </form>
+            </div>
+          </div>
+          <button type="submit" (click)="ForgetPassword()" class="signinbtn" >FORGET PASSWORD</button>
+          <div class="modal-footer ">
+            <p class="text-center">First time here? <a href="#">Create an Account.</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid"> 
+  <!-- Modal -->
+  <div class="modal fade" id="signup" role="dialog">
+    <div class="modal-dialog"> 
+      
+      <!-- Modal content-->
+      
+      <div class="row">
+        <div class="container modal-content signin_social" id="signin_popup ">
+          <div class="row">
+            <div class="col-12 col-lg-6 order-lg-1 order-12 text-center  left_top">
+              <h3>Create an account using</h3>
+              <button type="button" class="btn1 default"><i class="fa fa-facebook-f float-left"></i>Connect with Facebook</button>
+              <button type="button" class="btn1 default"><i class="fa fa-google-plus float-left"></i>Connect with Google</button>
+              <button type="button" class="btn1 default"><i class="fa fa-windows float-left"></i>Connect with Microsoft</button>
+            </div>
+            <div class="col-12 col-lg-6 order-lg-12 order-1 right_top">
+              <form [formGroup]="signUpForm">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2>Create a new one here</h2>
+               
+                <div class="form-group">
+                  <input type="email" class="form-control" formControlName="email" placeholder="Enter your Email ID">
+                </div>
+               
+                <div class="form-group">
+                  <input type="password" class="form-control"  formControlName="password"  placeholder="Password">
+                </div>
+                <p>By signing up to create an account I accept Brilliant Academe<a href="#"> Terms of Use and Privacy Policy.</a></p>
+                <div *ngIf="errorMsgSignup" class="error-msg">
+                  {{errorMsgSignup}}
+                </div>
+                <button type="submit" class="signinbtn" (click)="onSignUp()">Create Account</button>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer ">
+            <h2>Already have an account? <a href="#">Sign in.</a></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container-fluid"> 
+  <!-- Modal -->
+  <div class="modal fade" id="confirmcode" role="dialog" >
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="row text-center">
+        <div class="container modal-content signin_social">
+          <div class="row">
+            <div class="col-12 order-1 right_top">
+              <form [formGroup]="confirmCodeForm">                
+                <h2>Confirmation Code</h2>
+                <div class="form-group">
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
+                </div> 
+                  <button type="submit" (click)="onConfirmSignUp()" class="signinbtn" >Submit Code</button>
+
+              </form>
+              <div *ngIf="errorMsgConfirmSignUp" class="error-msg">
+                {{errorMsgConfirmSignUp}}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer ">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid"> 
+  <!-- Modal -->
+  <div class="modal fade" id="confirmcode2" role="dialog" >
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="row text-center">
+        <div class="container modal-content signin_social">
+          <div class="row">
+            <div class="col-12 order-1 right_top">
+              <form [formGroup]="confirmCodeForm2">                
+                <h2>Confirmation Code</h2>
+                <div class="form-group">
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
+                </div> 
+                  <button type="submit" (click)="onConfirmSignUp2()" class="signinbtn" >Submit Code</button>
+
+              </form>
+              <div *ngIf="errorMsgConfirmSignUp" class="error-msg">
+                {{errorMsgConfirmSignUp}}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer ">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="container-fluid"> 
+  <!-- Modal -->
+  <div class="modal fade" id="resetpassword" role="dialog" >
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="row text-center">
+        <div class="container modal-content signin_social" id="signin_popup ">
+          <div class="row">
+            <div class="col-12 order-1 right_top">
+              <form [formGroup]="resetpassword">                
+                <h2>Confirmation Code</h2>
+                <div class="form-group">
+                  <input type="email" class="form-control" required formControlName="email"  placeholder="Enter your Email ID">
+                  <div *ngIf="resetpassword.controls['email'].errors && !resetpassword.controls['email'].pristine" class="error-msg">
+                      <div [hidden]="!resetpassword.controls['email'].errors.required">Email is required.</div>
+                      <div [hidden]="!resetpassword.controls['email'].errors.patternInvalid">Email is invalid.</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                  <input type="password" class="form-control" formControlName="password" placeholder="Password" >
+                </div> 
+               
+                <div class="form-group">
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
+                </div> 
+                        
+                <div *ngIf="errorMsg" class="error-msg">
+                  {{errorMsg}}
+                </div>
+              <button type="submit" (click)="onsubmitforgotPassword()" class="signinbtn" >Submit Code</button>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer ">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+     
+
+
+
+	<!--Header open-->
+
+<header class="fixed-top bg-dark">
+  <div class="container-fluid head_bg_wt " id="mainNav">
+    <div class="container-fluid" >
+      <div class="row">
+        <div class="col">
+          <nav class="navbar navbar-expand-lg navbar-dark row" > <a href="index.html"><img src="../assets/img/logo.jpg" class="img-fluid logo" alt=""></a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"> <i class="navbar-toggler-icon fa fa-bars"></i> </button>
+            <div class="collapse navbar-collapse navbar-right" id="navbarResponsive">
+              <ul class="navbar-nav ml-auto " >
+                <li class="nav-item active"> <a class="nav-link" href="index.html">Home </a> </li>
+                <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Top Trainings </a>
+                  <div class="dropdown-menu  dropdown-menu-left" aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#"> link1</a> <a class="dropdown-item" href="inner.html"> link 2</a> <a class="dropdown-item" href="#"> link 3</a> <a class="dropdown-item" href="#"> link 4</a> <a class="dropdown-item" href="#">link 4</a> <a class="dropdown-item" href="#">link 4</a> </div>
+                </li>
+                <li class="nav-item"> <a class="nav-link " href="#">Top Instructors </a> </li>
+                <li class="nav-item"> <a class="nav-link " href="#" > About Us </a> </li>
+                <li class="nav-item"> <a class="nav-link " data-toggle="modal" data-target="#signup"> Register</a> </li>
+                <button type="button" class="btn pull-right " data-toggle="modal" data-target="#signin">Login</button>
+              </ul>
+            </div>
+          </nav>
+        </div>
+        <div class="float-right">
+          
+			<i class="glyph-icon flaticon-magnifying-glass padd_lft_15 sm_div pull-right" data-toggle="collapse" data-target="#filter-panel"></i> 
+		<a href="shopping_cart.html"><i class="glyph-icon flaticon-shopping-bag padd_lft_15 sm_div1 pull-right"><span>4</span> </i></a>
+		   <a class="border_outer nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">AR </a>
+          <div class="dropdown-menu  dropdown-menu-right " aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#">My Notifications</a> <a class="dropdown-item" href="inner.html"> My Messages</a> <a class="dropdown-item" href="#"> My Courses</a> <a class="dropdown-item" href="#">Instructor Dashboard</a> </div>
+				
+		  </div>
+      </div>
+    </div>
+    <div id="filter-panel" class="collapse filter-panel search_pl">
+      <div class="panel panel-default container">
+        <div class="panel-body">
+          <div class="search-filter-form">
+            <div class="row">
+              <div class="col-md-3 sf-form-col1">
+                <select class="form-control">
+                  <option>All Categories</option>
+                  <option>Cat 2</option>
+                  <option>Cat 3</option>
+                </select>
+                <span class="sf-form-selct-arrow"><i class="fa fa-angle-down"></i></span> </div>
+              <div class="col-md-4 sf-form-col2">
+                <input type="text" class="form-control" placeholder="What do you want to learn?" />
+              </div>
+              <div class="col-md-3 sf-form-col2">
+                <input type="text" class="form-control" placeholder="Subjects" />
+              </div>
+              <div class="col-md-2 sf-form-col3">
+                <select class="form-control">
+                  <option>Level 1</option>
+                  <option>Level 2</option>
+                  <option>Level 3</option>
+                </select>
+                <span class="sf-form-selct-arrow"><i class="fa fa-angle-down"></i></span> </div>
+              <button class="btn btn-primary sf-form-btnsearch" onclick="window.location.href='search.html'"> <i class="glyph-icon flaticon-magnifying-glass"></i> </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<!--Header end--> 
+
+
+
+<!--Router Outlet for component rendering start-->
+<router-outlet></router-outlet>
+<!--Router Outlet for component rendering end-->
+
+<!--Featured open-->
+<section class="contact_bg">
+  <div class="container-fluid  mrg_top">
+    <div class="row">
+      <div class="col-12 col-sm-6 bg-ltgry">
+        <h4>Featured Topics </h4>
+        <ul>
+          <li> Developer </li>
+          <li> Photography </li>
+          <li>Marketing </li>
+          <li> Photography </li>
+          <li> Digital Marketing </li>
+          <li> Project Management </li>
+          <li> Graphic Design </li>
+          <li>Web Design</li>
+          <li>Data Science</li>
+          <li>Python</li>
+          <li> SQL </li>
+          <li>Piano</li>
+          <li>Science & engineering</li>
+        </ul>
+      </div>
+      <div class="col-12 col-sm-6 bg-gry">
+        <h4>Becoming an Instructor</h4>
+        <p>It is a long established fact that a reader will be distracted by a page when lished fact that a reader.</p>
+        <h5>Easy to Add</h5>
+        <p>Creating new courses is easy four steps</p>
+        <ul>
+          <li>Create your profile</li>
+          <li>Upload new training courses</li>
+          <li>Intended price of the course</li>
+          <li>Course creation needs to be reviewed</li>
+        </ul>
+        <p><a class="btn btn-primary" href="register.html" role="button">Start teaching</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--Featured end--> 
+
+<!--foote open-->
+<section class="footer_main mrg_top">
+<div class="container-fluid">
+<div class="container">
+  <div class="row">
+    <div class="col-6 col-sm-6 col-md-3  ">
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">News</a></li>
+        <li><a href="#">Impact</a></li>
+        <li><a href="#">Our team</a></li>
+        <li><a href="#">Our interns</a></li>
+        <li><a href="#">Our content specialists</a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-sm-6 col-md-2 ">
+      <ul>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact Us </a></li>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Media Kit</a></li>
+        <li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-sm-6 col-md-3 ">
+      <ul>
+        <li><a href="#">Terms & Conditions</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Accessibility Policy</a></li>
+        <li><a href="#">Trademark Policy </a></li>
+        <li><a href="#">Sitemap </a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-sm-6 col-md-4 contact_bg">
+      <p> Many desktop publishing packages and web page editors now use Lorem Ipsum as web sites still in their infancy.
+        
+        Various versions have evolved over the years, sometimes by accident, sometimes </p>
+      <div class="row margin_btm3">
+        <div class="col-12  col-sm-12  topnav">
+          <div class="search-container ">
+            <h3>Get our latest news</h3>
+            <form action="/action_page.php">
+              <input type="text" placeholder="Enter your e-mail ID" name="search">
+              <button type="submit">Subscribe</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+</section>
+<section class="footer_copyright">
+  <div class="container-fluid">
+    <div class="container">
+      <div class="row">
+        <div class="col-12 col-sm-6 pull-left"> Copyright © 2018 Brilliant Academe. <a href="#">Terms of use</a> <a href="#">Privacy Policy</a> </div>
+        <div class="col-12 col-sm-6 pull-right  main_footer ">
+          <ul>
+            <li><a href="#"><i class="glyph-icon flaticon-social-youtube-circular-button"></i></a></li>
+            <li><a href="#"><i class="glyph-icon flaticon-linkedin "></i></a></li>
+            <li><a href="#"><i class="glyph-icon flaticon-social-twitter-circular-button "></i></a></li>
+            <li><a href="#"><i class="glyph-icon flaticon-social-facebook-circular-button "> </i></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!--foote end-->
