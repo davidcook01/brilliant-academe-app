@@ -10,7 +10,6 @@ public class EnrollCourseInfo implements Serializable {
 
     private String courseId;
 
-    @JsonProperty("name")
     private String courseName;
 
     @JsonProperty("description")

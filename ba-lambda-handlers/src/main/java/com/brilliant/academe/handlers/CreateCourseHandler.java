@@ -73,7 +73,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         for(CourseCategory courseCategory: createCourseRequest.getCourseCategories()){
             courseTable.putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", courseId)
-                    .withString("name", createCourseRequest.getCourseName())
+                    .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
                     .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + createCourseRequest.getCoverImage())
                     .withString("level", createCourseRequest.getCourseLevel())

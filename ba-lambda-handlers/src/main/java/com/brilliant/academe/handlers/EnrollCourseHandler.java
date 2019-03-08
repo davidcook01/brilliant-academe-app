@@ -43,7 +43,7 @@ public class EnrollCourseHandler implements RequestHandler<EnrollCourseRequest, 
             courseTable.putItem(new PutItemSpec().withItem(new Item()
                     .withString("userId", enrollCourseRequest.getUserId())
                     .withString("courseId", enrollCourseInfo.getCourseId())
-                    .withString("name", enrollCourseInfo.getCourseName())
+                    .withString("courseName", enrollCourseInfo.getCourseName())
                     .withString("description", enrollCourseInfo.getCourseDescription())
                     .withString("coverImage", enrollCourseInfo.getCoverImage())
                     .withString("instructorId", enrollCourseInfo.getInstructorId())
