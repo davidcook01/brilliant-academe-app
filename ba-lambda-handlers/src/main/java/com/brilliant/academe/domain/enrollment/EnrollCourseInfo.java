@@ -1,16 +1,28 @@
 package com.brilliant.academe.domain.enrollment;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EnrollCourseInfo implements Serializable {
 
     private String courseId;
+
+    @JsonProperty("name")
     private String courseName;
+
+    @JsonProperty("description")
     private String courseDescription;
+
     private String coverImage;
-    private String courseRating;
+
     private String instructorId;
+
     private String instructorName;
+
+    private Integer percentageCompleted;
 
     public String getCourseId() {
         return courseId;
@@ -44,14 +56,6 @@ public class EnrollCourseInfo implements Serializable {
         this.coverImage = coverImage;
     }
 
-    public String getCourseRating() {
-        return courseRating;
-    }
-
-    public void setCourseRating(String courseRating) {
-        this.courseRating = courseRating;
-    }
-
     public String getInstructorId() {
         return instructorId;
     }
@@ -66,5 +70,13 @@ public class EnrollCourseInfo implements Serializable {
 
     public void setInstructorName(String instructorName) {
         this.instructorName = instructorName;
+    }
+
+    public Integer getPercentageCompleted() {
+        return percentageCompleted;
+    }
+
+    public void setPercentageCompleted(Integer percentageCompleted) {
+        this.percentageCompleted = percentageCompleted;
     }
 }

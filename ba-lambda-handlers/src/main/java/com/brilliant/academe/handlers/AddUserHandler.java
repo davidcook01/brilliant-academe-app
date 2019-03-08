@@ -40,7 +40,7 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
         return this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER)
                 .putItem(
                         new PutItemSpec().withItem(new Item()
-                                .withString("userId", cognitoPostConfirmationRequest.getUserName())
+                                .withString("id", cognitoPostConfirmationRequest.getUserName())
                                 .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))));
     }
 

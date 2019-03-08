@@ -6,26 +6,18 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.enrollment.EnrollCourseInfoList;
+import com.brilliant.academe.domain.enrollment.EnrollCourseInfo;
 import com.brilliant.academe.domain.enrollment.EnrollCourseRequest;
 import com.brilliant.academe.domain.enrollment.EnrollCourseResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-
-import java.io.IOException;
-import java.util.Objects;
 
 public class EnrollCourseHandler implements RequestHandler<EnrollCourseRequest, EnrollCourseResponse> {
 
     private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_USER = "ba_user";
+    private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     private Regions REGION = Regions.US_EAST_1;
 
     public EnrollCourseResponse handleRequest(EnrollCourseRequest enrollCourseRequest, Context context) {
@@ -43,46 +35,20 @@ public class EnrollCourseHandler implements RequestHandler<EnrollCourseRequest, 
         this.dynamoDb = new DynamoDB(client);
     }
 
-    private UpdateItemOutcome persistData(EnrollCourseRequest enrollCourseRequest)
+    private void persistData(EnrollCourseRequest enrollCourseRequest)
             throws ConditionalCheckFailedException {
 
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER);
-
-        Item item = table.getItem("userId", enrollCourseRequest.getUserId());
-        String enrolledCoursesJson = new Gson().toJson(item.get("enrolled_courses"));
-
-        EnrollCourseInfoList existingCoursesFromDB = new EnrollCourseInfoList();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        try {
-            existingCoursesFromDB = objectMapper.readValue(enrolledCoursesJson, EnrollCourseInfoList.class);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Table courseTable = this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER_COURSE);
+        for(EnrollCourseInfo enrollCourseInfo: enrollCourseRequest.getBody().getCourses()){
+            courseTable.putItem(new PutItemSpec().withItem(new Item()
+                    .withString("userId", enrollCourseRequest.getUserId())
+                    .withString("courseId", enrollCourseInfo.getCourseId())
+                    .withString("name", enrollCourseInfo.getCourseName())
+                    .withString("description", enrollCourseInfo.getCourseDescription())
+                    .withString("coverImage", enrollCourseInfo.getCoverImage())
+                    .withString("instructorId", enrollCourseInfo.getInstructorId())
+                    .withString("instructorName", enrollCourseInfo.getInstructorName())
+                    .withNumber("percentageCompleted", enrollCourseInfo.getPercentageCompleted())));
         }
-
-        System.out.println("existingCoursesFromDB: "+ existingCoursesFromDB);
-        System.out.println("enrollCourseRequest.getCourses(): "+ enrollCourseRequest.getBody().getCourses());
-        if(Objects.isNull(existingCoursesFromDB)){
-            existingCoursesFromDB = new EnrollCourseInfoList();
-            existingCoursesFromDB.setCourses(enrollCourseRequest.getBody().getCourses());
-        }else {
-            existingCoursesFromDB.getCourses().addAll(enrollCourseRequest.getBody().getCourses());
-        }
-
-        System.out.println("GET COURSES: " + existingCoursesFromDB.getCourses());
-        String totalCourses = "";
-        try {
-            totalCourses = objectMapper.writeValueAsString(existingCoursesFromDB);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey("userId", enrollCourseRequest.getUserId())
-                .withUpdateExpression("set enrolled_courses = :val")
-                .withValueMap(new ValueMap()
-                        .withJSON(":val", totalCourses));
-
-        return table.updateItem(updateItemSpec);
     }
 }

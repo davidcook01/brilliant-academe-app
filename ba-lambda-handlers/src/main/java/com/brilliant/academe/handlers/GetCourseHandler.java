@@ -17,7 +17,7 @@ import java.io.IOException;
 public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCourseResponse> {
 
     private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
+    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
     private Regions REGION = Regions.US_EAST_1;
 
     public GetCourseResponse handleRequest(GetCourseRequest courseRequest, Context context) {
@@ -33,8 +33,8 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     }
 
     private GetCourseResponse getData(GetCourseRequest courseRequest){
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
-        Item item = table.getItem("courseId", courseRequest.getCourseId());
+        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
+        Item item = table.getItem("id", courseRequest.getCourseId());
         GetCourseResponse response = new GetCourseResponse();
         ObjectMapper objectMapper = new ObjectMapper();
         try {

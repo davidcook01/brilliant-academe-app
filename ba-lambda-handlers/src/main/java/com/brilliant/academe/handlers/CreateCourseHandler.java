@@ -6,10 +6,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.course.CreateCourseRequest;
 import com.brilliant.academe.domain.course.CreateCourseResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +23,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
 
     private DynamoDB dynamoDb;
     private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
+    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
     private Regions REGION = Regions.US_EAST_1;
     private String S3_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-video-upload/";
 
@@ -58,27 +61,35 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         }
 
         String sectionDetails = "";
-        String courseCategories = "";
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             sectionDetails = objectMapper.writeValueAsString(createCourseRequest.getSections());
-            courseCategories = objectMapper.writeValueAsString(createCourseRequest.getCourseCategories());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE)
-                .putItem(
-                        new PutItemSpec().withItem(new Item()
-                                .withString("courseId", UUID.randomUUID().toString())
-                                .withString("instructorId", createCourseRequest.getInstructorId())
-                                .withString("instructorName", createCourseRequest.getInstructorName())
-                                .withString("courseName", createCourseRequest.getCourseName())
-                                .withString("courseDescription", createCourseRequest.getCourseDescription())
-                                .withString("courseRating", createCourseRequest.getMyRating())
-                                .withJSON("courseCategories", courseCategories)
-                                .withString("courseCoverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + createCourseRequest.getCoverImage())
-                                .withJSON("courseSection", sectionDetails)));
+        Table courseTable = this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
+        String courseId = UUID.randomUUID().toString();
+        for(CourseCategory courseCategory: createCourseRequest.getCourseCategories()){
+            courseTable.putItem(new PutItemSpec().withItem(new Item()
+                    .withString("id", courseId)
+                    .withString("name", createCourseRequest.getCourseName())
+                    .withString("description", createCourseRequest.getCourseDescription())
+                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + createCourseRequest.getCoverImage())
+                    .withString("level", createCourseRequest.getCourseLevel())
+                    .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
+                    .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
+                    .withString("instructorId", createCourseRequest.getInstructorId())
+                    .withString("instructorName", createCourseRequest.getInstructorName())
+                    .withString("categoryId", courseCategory.getCourseCategoryId())
+                    .withString("categoryName", courseCategory.getCourseCategoryName())
+                    .withString("categoryDescription", courseCategory.getCourseCategoryDescription())));
+        }
+
+        return this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
+                .putItem(new PutItemSpec().withItem(new Item()
+                    .withString("id", courseId)
+                    .withJSON("resources", sectionDetails)));
     }
 
 }

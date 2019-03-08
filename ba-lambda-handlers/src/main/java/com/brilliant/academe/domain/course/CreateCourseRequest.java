@@ -1,6 +1,7 @@
 package com.brilliant.academe.domain.course;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CreateCourseRequest implements Serializable {
@@ -8,12 +9,12 @@ public class CreateCourseRequest implements Serializable {
     private String courseName;
     private String courseDescription;
     private String coverImage;
-    private List courseCategories;
+    private List<CourseCategory> courseCategories;
     private String instructorId;
     private String instructorName;
-    private String percentageCompletion;
-    private String courseRating;
-    private String myRating;
+    private String courseLevel;
+    private BigDecimal coursePrice;
+    private BigDecimal discountedCoursePrice;
     private List<CourseSection> sections;
 
     public String getCourseName() {
@@ -40,11 +41,11 @@ public class CreateCourseRequest implements Serializable {
         this.coverImage = coverImage;
     }
 
-    public List getCourseCategories() {
+    public List<CourseCategory> getCourseCategories() {
         return courseCategories;
     }
 
-    public void setCourseCategories(List courseCategories) {
+    public void setCourseCategories(List<CourseCategory> courseCategories) {
         this.courseCategories = courseCategories;
     }
 
@@ -64,28 +65,28 @@ public class CreateCourseRequest implements Serializable {
         this.instructorName = instructorName;
     }
 
-    public String getPercentageCompletion() {
-        return percentageCompletion;
+    public String getCourseLevel() {
+        return courseLevel;
     }
 
-    public void setPercentageCompletion(String percentageCompletion) {
-        this.percentageCompletion = percentageCompletion;
+    public void setCourseLevel(String courseLevel) {
+        this.courseLevel = courseLevel;
     }
 
-    public String getCourseRating() {
-        return courseRating;
+    public BigDecimal getCoursePrice() {
+        return coursePrice;
     }
 
-    public void setCourseRating(String courseRating) {
-        this.courseRating = courseRating;
+    public void setCoursePrice(BigDecimal coursePrice) {
+        this.coursePrice = coursePrice;
     }
 
-    public String getMyRating() {
-        return myRating;
+    public BigDecimal getDiscountedCoursePrice() {
+        return discountedCoursePrice;
     }
 
-    public void setMyRating(String myRating) {
-        this.myRating = myRating;
+    public void setDiscountedCoursePrice(BigDecimal discountedCoursePrice) {
+        this.discountedCoursePrice = discountedCoursePrice;
     }
 
     public List<CourseSection> getSections() {
