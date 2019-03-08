@@ -33,7 +33,6 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     }
 
     private GetCourseResponse getData(GetCourseRequest courseRequest){
-
         Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
         Item item = table.getItem("courseId", courseRequest.getCourseId());
         GetCourseResponse response = new GetCourseResponse();
