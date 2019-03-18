@@ -75,7 +75,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("id", courseId)
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
-                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + createCourseRequest.getCoverImage())
+                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + createCourseRequest.getCoverImage())
                     .withString("level", createCourseRequest.getCourseLevel())
                     .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
