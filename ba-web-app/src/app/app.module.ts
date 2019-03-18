@@ -9,13 +9,19 @@ import { TrainingService} from './services/training.service'
 import { AuthGuardService} from './services/auth-guard.service'
 import {HttpClientModule} from '@angular/common/http';
 import { CreateCourseInfoComponent } from './instructor/create-course-info/create-course-info.component';
-import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component'
+import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component';
+import { HomeComponent } from './home/home.component';
+import { PlaylistComponent } from './student/playlist/playlist.component';
+import { VideoComponent } from './student/video/video.component'
 
 @NgModule({
   declarations: [
     AppComponent,
     CreateCourseInfoComponent,
-    EnrolledCoursesComponent
+    EnrolledCoursesComponent,
+    HomeComponent,
+    PlaylistComponent,
+    VideoComponent
   ],
   imports: [
     BrowserModule,
