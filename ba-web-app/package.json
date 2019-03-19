@@ -26,6 +26,7 @@
     "angular5-social-login": "^1.0.9",
     "aws-amplify": "^1.1.22",
     "aws-sdk": "^2.305.0",
+    "axios": "^0.18.0",
     "core-js": "^2.5.7",
     "jquery": "^3.3.1",
     "jquery.easing": "^1.4.1",
