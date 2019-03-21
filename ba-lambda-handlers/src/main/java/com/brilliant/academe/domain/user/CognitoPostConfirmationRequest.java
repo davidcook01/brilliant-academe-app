@@ -1,4 +1,4 @@
-package com.brilliant.academe.domain;
+package com.brilliant.academe.domain.user;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 

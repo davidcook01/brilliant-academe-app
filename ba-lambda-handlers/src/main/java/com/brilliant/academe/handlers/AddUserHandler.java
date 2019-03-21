@@ -10,7 +10,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.CognitoPostConfirmationRequest;
+import com.brilliant.academe.domain.user.CognitoPostConfirmationRequest;
 
 public class AddUserHandler implements RequestHandler<CognitoPostConfirmationRequest, String> {
 
