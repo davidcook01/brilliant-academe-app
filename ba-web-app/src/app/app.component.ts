@@ -220,33 +220,33 @@ export class AppComponent implements OnInit {
 
   google(){
     console.log("google");
-    let url = "https://brilliant-academe.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=7e5hvkuort7iu4pde4c2p8t2ag&redirect_uri=http://localhost:4200";
-    //let result = this.http.get(url);
+    let url = "https://brilliant-academe.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=6her35acoifrnmia95q8sjvovl&redirect_uri=https://www.amazon.com";
+    let result = this.http.get(url);
     window.location.replace(url);
-    //console.log(result);
-  //   const ga = window.gapi.auth2.getAuthInstance();
-  //   ga.signIn().then(googleUser => {
-  //   const { id_token, expires_at } = googleUser.getAuthResponse();
-  //   const profile = googleUser.getBasicProfile();
-  //   const user = {
-  //       email: profile.getEmail(),
-  //       name: profile.getName()
-  //   };
+    console.log(result);
+    //  const ga;
+    //  ga.signIn().then(googleUser => {
+    // const { id_token, expires_at } = googleUser.getAuthResponse();
+    // const profile = googleUser.getBasicProfile();
+    // const user = {
+    //      email: profile.getEmail(),
+    //      name: profile.getName()
+    //  };
 
-  //   return Auth.federatedSignIn(
-  //       // Initiate federated sign-in with Google identity provider 
-  //       'google',
+  //   return this.auth.federatedSignIn(
+  //     // Initiate federated sign-in with Google identity provider 
+  //      'google',
   //       { 
   //           // the JWT token
-  //           token: id_token, 
-  //           // the expiration time
-  //           expires_at 
-  //       },
+  //            token: id_token, 
+  //            // the expiration time
+  //          expires_at 
+  //        },
   //       // a user object
-  //       user
-  //   ).then(() => {
-  //       // ...
-  //   });
-  // });
+  //        user
+  //    ).then(() => {
+  //        // ...
+  //    });
+  //  });
   }
 }

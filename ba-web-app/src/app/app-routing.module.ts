@@ -25,7 +25,7 @@ const routes: Routes = [
     component: PlaylistComponent
   },
   {
-    path: 'video', 
+    path: 'video/:courseId', 
     component: VideoComponent
   }
 ];

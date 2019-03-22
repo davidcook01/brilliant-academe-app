@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CourseService } from '../../course.service';
 
 interface Course {
   courseDescription: string;
@@ -21,12 +23,14 @@ export class EnrolledCoursesComponent implements OnInit {
 
   public courses: Course[];
 
-  constructor(private router: Router) {
+  constructor(private router: Router , private courseService:CourseService) {
     this.courses = [];
   }
 
-  public async loadCourseVideos() {
-    this.router.navigateByUrl('/video');
+  public async loadCourseVideos(courseId: String) {
+    console.log(courseId);
+    const url = '/video/'+courseId;
+    this.router.navigateByUrl(url);
     console.log(this.courses[0]);
   }
 
@@ -49,4 +53,14 @@ export class EnrolledCoursesComponent implements OnInit {
     this.showCourses();
   }
 
+  showCourses2(){
+    
+    this.getCourses2();
+
+
+  }
+
+  getCourses2(){
+
+  }
 }
