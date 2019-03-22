@@ -48,7 +48,8 @@ public class EnrollCourseHandler implements RequestHandler<EnrollCourseRequest, 
                     .withString("coverImage", enrollCourseInfo.getCoverImage())
                     .withString("instructorId", enrollCourseInfo.getInstructorId())
                     .withString("instructorName", enrollCourseInfo.getInstructorName())
-                    .withNumber("percentageCompleted", enrollCourseInfo.getPercentageCompleted())));
+                    .withNumber("percentageCompleted", enrollCourseInfo.getPercentageCompleted())
+                    .withNumber("courseDuration", enrollCourseInfo.getCourseDuration())));
         }
     }
 }

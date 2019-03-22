@@ -76,14 +76,16 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
                     .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + createCourseRequest.getCoverImage())
-                    .withString("level", createCourseRequest.getCourseLevel())
+                    .withString("courseLevel", createCourseRequest.getCourseLevel())
                     .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
                     .withString("instructorId", createCourseRequest.getInstructorId())
                     .withString("instructorName", createCourseRequest.getInstructorName())
                     .withString("categoryId", courseCategory.getCourseCategoryId())
                     .withString("categoryName", courseCategory.getCourseCategoryName())
-                    .withString("categoryDescription", courseCategory.getCourseCategoryDescription())));
+                    .withString("categoryDescription", courseCategory.getCourseCategoryDescription())
+                    .withNumber("courseDuration", createCourseRequest.getCourseDuration())
+                    .withString("courseType", createCourseRequest.getCourseType())));
         }
 
         return this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)

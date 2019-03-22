@@ -15,6 +15,8 @@ public class CreateCourseRequest implements Serializable {
     private String courseLevel;
     private BigDecimal coursePrice;
     private BigDecimal discountedCoursePrice;
+    private BigDecimal courseDuration;
+    private String courseType;
     private List<CourseSection> sections;
 
     public String getCourseName() {
@@ -87,6 +89,22 @@ public class CreateCourseRequest implements Serializable {
 
     public void setDiscountedCoursePrice(BigDecimal discountedCoursePrice) {
         this.discountedCoursePrice = discountedCoursePrice;
+    }
+
+    public BigDecimal getCourseDuration() {
+        return courseDuration;
+    }
+
+    public void setCourseDuration(BigDecimal courseDuration) {
+        this.courseDuration = courseDuration;
+    }
+
+    public String getCourseType() {
+        return courseType;
+    }
+
+    public void setCourseType(String courseType) {
+        this.courseType = courseType;
     }
 
     public List<CourseSection> getSections() {

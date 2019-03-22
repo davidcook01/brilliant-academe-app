@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilterCourseInfo implements Serializable {
@@ -22,7 +23,9 @@ public class FilterCourseInfo implements Serializable {
 
     private String instructorName;
 
-    private Integer percentageCompleted;
+    private BigDecimal courseDuration;
+
+    private String courseType;
 
     public String getCourseId() {
         return courseId;
@@ -72,11 +75,19 @@ public class FilterCourseInfo implements Serializable {
         this.instructorName = instructorName;
     }
 
-    public Integer getPercentageCompleted() {
-        return percentageCompleted;
+    public BigDecimal getCourseDuration() {
+        return courseDuration;
     }
 
-    public void setPercentageCompleted(Integer percentageCompleted) {
-        this.percentageCompleted = percentageCompleted;
+    public void setCourseDuration(BigDecimal courseDuration) {
+        this.courseDuration = courseDuration;
+    }
+
+    public String getCourseType() {
+        return courseType;
+    }
+
+    public void setCourseType(String courseType) {
+        this.courseType = courseType;
     }
 }
