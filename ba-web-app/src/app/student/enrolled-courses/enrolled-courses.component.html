@@ -1,21 +1,21 @@
-
 <section  class="bg_banner_inner text-center">
-  <h2>Enrolled Course</h2>
+  <h2>Enrolled Courses</h2>
 </section>
 <div class="container-fluid">
 	<h1 class="heading-choose">My Course</h1>
 	<div class="row custom-card">
 		<ng-template [ngIf]="courses.length">	
+				
     	<div class="col-lg-2 col-md-3 col-sm-4 col-6" *ngFor="let course of courses[0]">
 				<h6>{{course.courseName}}</h6>
 				<div class="card bottom-btm2rem"> 
-					<a href="">
+					<div (click)="loadCourseVideos()">
 						<img class=" card-img-top  img-fluid" src={{course.coverImage}} alt="Card image">
-					</a>
-					<a href="video.html" class="btn btn-primary btn-lg btn-block select-btn-cust">Select</a>
+					</div>
+					<div (click)="loadCourseVideos()" class="btn btn-primary btn-lg btn-block select-btn-cust">Select</div>
 					<div class="text-left">
-						<h4 class="enrolled-card">
-							<a href="#">{{course.instructorName}}</a>
+						<h4 class="enrolled-card" (click)="loadCourseVideos()">
+							{{course.instructorName}}
 						</h4>
 					</div>
 					<div class="progress" style="height:15px">
