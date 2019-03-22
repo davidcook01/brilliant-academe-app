@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import axios from 'axios';
+// import vidControls from '../../../assets/js/video-controls.js';
+
+// vidControls();
 
 interface Video {
   courseSection: []

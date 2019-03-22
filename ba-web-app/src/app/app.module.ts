@@ -12,7 +12,7 @@ import { CreateCourseInfoComponent } from './instructor/create-course-info/creat
 import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component';
 import { HomeComponent } from './home/home.component';
 import { PlaylistComponent } from './student/playlist/playlist.component';
-import { VideoComponent } from './student/video/video.component'
+import { VideoComponent } from './student/video/video.component';
 
 @NgModule({
   declarations: [
