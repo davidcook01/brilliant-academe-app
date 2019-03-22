@@ -8,19 +8,13 @@
 				
     	<div class="col-lg-2 col-md-3 col-sm-4 col-6" *ngFor="let course of courses[0]">
 				<h6>{{course.courseName}}</h6>
-				<div class="card bottom-btm2rem"> 
-					<div (click)="loadCourseVideos()">
-						<input type="hidden" class="courseId" name="courseId" value={{course.courseId}}>
-						<img class=" card-img-top  img-fluid" src={{course.coverImage}} alt="Card image">
-					</div>
-					<div (click)="loadCourseVideos(course.courseId)" class="btn btn-primary btn-lg btn-block select-btn-cust">
-						<input type="hidden" class="courseId" name="courseId" value={{course.courseId}}>
+				<div class="card bottom-btm2rem" (click)='loadCourseVideos(course.courseId)'> 
+					<img class=" card-img-top  img-fluid" src={{course.coverImage}} alt="Card image">
+					<div class="btn btn-primary btn-lg btn-block select-btn-cust">
 						Select
 					</div>
 					<div class="text-left">
-					
-						<h4 class="enrolled-card" (click)='loadCourseVideos(course.courseId)'>
-							<input type="hidden" class="courseId" name="courseId" value={{course.courseId}}>
+						<h4 class="enrolled-card">
 							{{course.instructorName}}
 						</h4>
 					</div>
