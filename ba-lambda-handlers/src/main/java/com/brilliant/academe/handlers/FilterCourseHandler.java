@@ -26,6 +26,7 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
     private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
     private Regions REGION = Regions.US_EAST_1;
 
+    @Override
     public FilterCourseResponse handleRequest(FilterCourseRequest filterCourseRequest, Context context) {
         this.initDynamoDbClient();
         return getData(filterCourseRequest);

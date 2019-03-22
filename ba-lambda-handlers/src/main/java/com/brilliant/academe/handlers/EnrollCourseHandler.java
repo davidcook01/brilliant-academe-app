@@ -20,6 +20,7 @@ public class EnrollCourseHandler implements RequestHandler<EnrollCourseRequest, 
     private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     private Regions REGION = Regions.US_EAST_1;
 
+    @Override
     public EnrollCourseResponse handleRequest(EnrollCourseRequest enrollCourseRequest, Context context) {
         this.initDynamoDbClient();
         persistData(enrollCourseRequest);

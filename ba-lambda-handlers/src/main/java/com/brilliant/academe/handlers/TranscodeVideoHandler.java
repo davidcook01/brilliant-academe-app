@@ -20,6 +20,7 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
     private AmazonElasticTranscoder amazonElasticTranscoder = AmazonElasticTranscoderClient.builder().build();
     private static final String PIPELINE_ID = "1551221588927-5zpuyx";
 
+    @Override
     public String handleRequest(S3Event event, Context context) {
         context.getLogger().log("Received event: " + event);
 

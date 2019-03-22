@@ -8,22 +8,22 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.course.GetCourseRequest;
-import com.brilliant.academe.domain.course.GetCourseResponse;
+import com.brilliant.academe.domain.lookup.LookupMasterResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCourseResponse> {
+public class LookupMasterHandler implements RequestHandler<Void, LookupMasterResponse> {
 
     private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
+    private String DYNAMODB_TABLE_NAME_LOOKUP = "ba_lookup";
+    private String LOOKUP_ID = "1";
     private Regions REGION = Regions.US_EAST_1;
 
     @Override
-    public GetCourseResponse handleRequest(GetCourseRequest courseRequest, Context context) {
+    public LookupMasterResponse handleRequest(Void request, Context context) {
         this.initDynamoDbClient();
-        return getData(courseRequest);
+        return getData();
     }
 
     private void initDynamoDbClient() {
@@ -33,13 +33,13 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
         this.dynamoDb = new DynamoDB(client);
     }
 
-    private GetCourseResponse getData(GetCourseRequest courseRequest){
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
-        Item item = table.getItem("id", courseRequest.getCourseId());
-        GetCourseResponse response = new GetCourseResponse();
+    private LookupMasterResponse getData() {
+        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_LOOKUP);
+        Item item = table.getItem("id", LOOKUP_ID);
+        LookupMasterResponse response = new LookupMasterResponse();
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            response = objectMapper.readValue(item.toJSON(), GetCourseResponse.class);
+            response = objectMapper.readValue(item.toJSON(), LookupMasterResponse.class);
         } catch (IOException e) {
             e.printStackTrace();
         }

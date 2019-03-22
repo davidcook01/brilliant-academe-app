@@ -27,6 +27,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     private Regions REGION = Regions.US_EAST_1;
     private String S3_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-video-upload/";
 
+    @Override
     public CreateCourseResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
         this.initDynamoDbClient();
         persistData(createCourseRequest);

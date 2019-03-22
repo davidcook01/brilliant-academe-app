@@ -24,6 +24,7 @@ public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseR
     private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     private Regions REGION = Regions.US_EAST_1;
 
+    @Override
     public GetStudentCourseResponse handleRequest(GetStudentCourseRequest studentCourseRequest, Context context) {
         this.initDynamoDbClient();
         return getData(studentCourseRequest);
