@@ -24,7 +24,17 @@ public class EnrollCourseInfo implements Serializable {
 
     private Integer percentageCompleted;
 
-    private BigDecimal courseDuration;
+    private Float courseDuration;
+
+    private Float courseRating;
+
+    public Float getCourseRating() {
+        return courseRating;
+    }
+
+    public void setCourseRating(Float courseRating) {
+        this.courseRating = courseRating;
+    }
 
     public String getCourseId() {
         return courseId;
@@ -82,11 +92,11 @@ public class EnrollCourseInfo implements Serializable {
         this.percentageCompleted = percentageCompleted;
     }
 
-    public BigDecimal getCourseDuration() {
+    public Float getCourseDuration() {
         return courseDuration;
     }
 
-    public void setCourseDuration(BigDecimal courseDuration) {
+    public void setCourseDuration(Float courseDuration) {
         this.courseDuration = courseDuration;
     }
 }

@@ -26,7 +26,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
     @Override
     public Void handleRequest(DynamodbEvent dynamodbEvent, Context context) {
         this.initDynamoDbClient();
-        return getData(dynamodbEvent);
+        return execute(dynamodbEvent);
     }
 
     private void initDynamoDbClient() {
@@ -36,7 +36,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
         this.dynamoDb = new DynamoDB(client);
     }
 
-    private Void getData(DynamodbEvent dynamodbEvent) {
+    private Void execute(DynamodbEvent dynamodbEvent) {
         for (DynamodbEvent.DynamodbStreamRecord record : dynamodbEvent.getRecords()) {
             if (record == null) {
                 continue;
@@ -45,15 +45,23 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
             System.out.println("Event Type:"+ record.getEventName());
             if(Objects.nonNull(record) && Objects.nonNull(record.getEventName())){
                 if(record.getEventName().equals("MODIFY")){
-                    String oldRating = record.getDynamodb().getOldImage().get("courseRating").getN();
-                    String newRating = record.getDynamodb().getNewImage().get("courseRating").getN();
+                    String oldRating = "";
+                    String newRating = "";
+                    if(Objects.nonNull(record.getDynamodb().getOldImage().get("courseRating"))){
+                        oldRating = record.getDynamodb().getOldImage().get("courseRating").getN();
+                    }
+
+                    if(Objects.nonNull(record.getDynamodb().getNewImage().get("courseRating"))){
+                        newRating = record.getDynamodb().getNewImage().get("courseRating").getN();
+                    }
+
                     System.out.println("Old Rating:"+ oldRating + ", New Rating:"+ newRating);
 
-                    if(!oldRating.equals(newRating)){
+                    if(!oldRating.equals(newRating) && !newRating.equals("")){
                         System.out.println("Update Required");
                         String courseId = record.getDynamodb().getKeys().get("courseId").getS();
                         System.out.println("Course Id"+ courseId);
-                        BigDecimal averageRating = calculateAverageRating(courseId);
+                        Float averageRating = calculateAverageRating(courseId);
                         updateRatingsInCourseTable(courseId, averageRating);
                     }else{
                         System.out.println("Update Not Required");
@@ -64,7 +72,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
         return null;
     }
 
-    private BigDecimal calculateAverageRating(String courseId){
+    private Float calculateAverageRating(String courseId){
         Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER_COURSE);
         Index index = table.getIndex("courseId-index");
         QuerySpec querySpec = new QuerySpec()
@@ -74,18 +82,25 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
 
         ItemCollection<QueryOutcome> items = index.query(querySpec);
         Iterator<Item> iter = items.iterator();
-        BigDecimal courseRating = new BigDecimal(0);
+        Float courseRating = 0F;
         int count = 0;
         while (iter.hasNext()) {
-            count++;
-            courseRating = courseRating.add((BigDecimal) iter.next().get("courseRating"));
+            Item obj = iter.next();
+            if(Objects.nonNull(obj.get("courseRating"))){
+                BigDecimal rating = (BigDecimal) obj.get("courseRating");
+                if(Objects.nonNull(rating)) {
+                    courseRating = courseRating + rating.floatValue();
+                    count++;
+                }
+            }
+
         }
-        BigDecimal averageRating = courseRating.divide(new BigDecimal(count));
+        Float averageRating = courseRating/(new Float(count));
         System.out.println("Total Course Count:"+ count + ", Total Rating:" + courseRating + ", Average Rating:"+ averageRating);
         return averageRating;
     }
 
-    private void updateRatingsInCourseTable(String courseId, BigDecimal averageRating){
+    private void updateRatingsInCourseTable(String courseId, Float averageRating){
         Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
         Index index = table.getIndex("id-index");
         QuerySpec querySpec = new QuerySpec()

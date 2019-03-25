@@ -29,7 +29,7 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
     @Override
     public FilterCourseResponse handleRequest(FilterCourseRequest filterCourseRequest, Context context) {
         this.initDynamoDbClient();
-        return getData(filterCourseRequest);
+        return execute(filterCourseRequest);
     }
 
     private void initDynamoDbClient() {
@@ -39,7 +39,7 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
         this.dynamoDb = new DynamoDB(client);
     }
 
-    private FilterCourseResponse getData(FilterCourseRequest filterCourseRequest){
+    private FilterCourseResponse execute(FilterCourseRequest filterCourseRequest){
         FilterCourseResponse response = new FilterCourseResponse();
         List<FilterCourseInfo> filterCourseInfos = new ArrayList<>();
 

@@ -26,13 +26,14 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
     private Regions REGION = Regions.US_EAST_1;
     private String S3_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-video-upload/";
+    private String courseId = "";
 
     @Override
     public CreateCourseResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
         this.initDynamoDbClient();
-        persistData(createCourseRequest);
+        PutItemOutcome outcome = persistData(createCourseRequest);
         CreateCourseResponse response = new CreateCourseResponse();
-        response.setMessage("SUCCESS");
+        response.setMessage(courseId);
         return response;
     }
 
@@ -70,7 +71,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         }
 
         Table courseTable = this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
-        String courseId = UUID.randomUUID().toString();
+        courseId = UUID.randomUUID().toString();
         for(CourseCategory courseCategory: createCourseRequest.getCourseCategories()){
             courseTable.putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", courseId)

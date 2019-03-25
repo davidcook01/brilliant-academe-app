@@ -23,9 +23,17 @@ public class FilterCourseInfo implements Serializable {
 
     private String instructorName;
 
-    private BigDecimal courseDuration;
+    private Float courseDuration;
+
+    private Float courseRating;
 
     private String courseType;
+
+    @JsonProperty("price")
+    private BigDecimal coursePrice;
+
+    @JsonProperty("discountedPrice")
+    private BigDecimal discountedCoursePrice;
 
     public String getCourseId() {
         return courseId;
@@ -75,12 +83,20 @@ public class FilterCourseInfo implements Serializable {
         this.instructorName = instructorName;
     }
 
-    public BigDecimal getCourseDuration() {
+    public Float getCourseDuration() {
         return courseDuration;
     }
 
-    public void setCourseDuration(BigDecimal courseDuration) {
+    public void setCourseDuration(Float courseDuration) {
         this.courseDuration = courseDuration;
+    }
+
+    public Float getCourseRating() {
+        return courseRating;
+    }
+
+    public void setCourseRating(Float courseRating) {
+        this.courseRating = courseRating;
     }
 
     public String getCourseType() {
@@ -89,5 +105,21 @@ public class FilterCourseInfo implements Serializable {
 
     public void setCourseType(String courseType) {
         this.courseType = courseType;
+    }
+
+    public BigDecimal getCoursePrice() {
+        return coursePrice;
+    }
+
+    public void setCoursePrice(BigDecimal coursePrice) {
+        this.coursePrice = coursePrice;
+    }
+
+    public BigDecimal getDiscountedCoursePrice() {
+        return discountedCoursePrice;
+    }
+
+    public void setDiscountedCoursePrice(BigDecimal discountedCoursePrice) {
+        this.discountedCoursePrice = discountedCoursePrice;
     }
 }

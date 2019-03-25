@@ -1,17 +1,16 @@
 package com.brilliant.academe.domain.rating;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 public class CourseRatingInfo implements Serializable {
 
-    private BigDecimal courseRating;
+    private Float courseRating;
 
-    public BigDecimal getCourseRating() {
+    public Float getCourseRating() {
         return courseRating;
     }
 
-    public void setCourseRating(BigDecimal courseRating) {
+    public void setCourseRating(Float courseRating) {
         this.courseRating = courseRating;
     }
 }
