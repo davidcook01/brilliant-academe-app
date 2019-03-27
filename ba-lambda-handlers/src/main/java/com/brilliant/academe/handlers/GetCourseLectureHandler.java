@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.course.GetCourseLectureRequest;
@@ -35,7 +36,10 @@ public class GetCourseLectureHandler  implements RequestHandler<GetCourseLecture
 
     private GetCourseLectureResponse getData(GetCourseLectureRequest courseRequest){
         Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
-        Item item = table.getItem("id", courseRequest.getCourseId());
+        GetItemSpec itemSpec = new GetItemSpec()
+                .withPrimaryKey("id", courseRequest.getCourseId())
+                .withAttributesToGet("id", "resources");
+        Item item = table.getItem(itemSpec);
         GetCourseLectureResponse response = new GetCourseLectureResponse();
         ObjectMapper objectMapper = new ObjectMapper();
         try {

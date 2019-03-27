@@ -38,10 +38,10 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
     private void persistData(CognitoPostConfirmationRequest cognitoPostConfirmationRequest)
             throws ConditionalCheckFailedException {
         this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER)
-                .putItem(
-                        new PutItemSpec().withItem(new Item()
-                                .withString("id", cognitoPostConfirmationRequest.getUserName())
-                                .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))));
+            .putItem(
+                new PutItemSpec().withItem(new Item()
+                    .withString("id", cognitoPostConfirmationRequest.getUserName())
+                    .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))));
     }
 
 }

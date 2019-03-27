@@ -5,7 +5,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
@@ -31,7 +30,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     @Override
     public CreateCourseResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
         this.initDynamoDbClient();
-        PutItemOutcome outcome = persistData(createCourseRequest);
+        persistData(createCourseRequest);
         CreateCourseResponse response = new CreateCourseResponse();
         response.setMessage(courseId);
         return response;
@@ -44,7 +43,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         this.dynamoDb = new DynamoDB(client);
     }
 
-    private PutItemOutcome persistData(CreateCourseRequest createCourseRequest)
+    private void persistData(CreateCourseRequest createCourseRequest)
             throws ConditionalCheckFailedException {
 
         if(createCourseRequest.getSections() != null && createCourseRequest.getSections().size() > 0){
@@ -70,7 +69,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
             e.printStackTrace();
         }
 
-        Table courseTable = this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
+        Table courseTable = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
         courseId = UUID.randomUUID().toString();
         for(CourseCategory courseCategory: createCourseRequest.getCourseCategories()){
             courseTable.putItem(new PutItemSpec().withItem(new Item()
@@ -90,9 +89,19 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("courseType", createCourseRequest.getCourseType())));
         }
 
-        return this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
+        dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
                 .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", courseId)
+                    .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
+                    .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
+                    .withString("courseName", createCourseRequest.getCourseName())
+                    .withString("description", createCourseRequest.getCourseDescription())
+                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + createCourseRequest.getCoverImage())
+                    .withString("courseLevel", createCourseRequest.getCourseLevel())
+                    .withString("instructorId", createCourseRequest.getInstructorId())
+                    .withString("instructorName", createCourseRequest.getInstructorName())
+                    .withNumber("courseDuration", createCourseRequest.getCourseDuration())
+                    .withString("courseType", createCourseRequest.getCourseType())
                     .withJSON("resources", sectionDetails)));
     }
 

@@ -21,6 +21,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
     private DynamoDB dynamoDb;
     private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
+    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
     private Regions REGION = Regions.US_EAST_1;
 
     @Override
@@ -122,5 +123,13 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
                     .withValueMap(new ValueMap().withNumber(":courseRating", averageRating));
             table.updateItem(updateItemSpec);
         }
+
+        Table courseResourceTable = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey("id", courseId)
+                .withUpdateExpression("set #p = :courseRating")
+                .withNameMap(new NameMap().with("#p", "courseRating"))
+                .withValueMap(new ValueMap().withNumber(":courseRating", averageRating));
+        courseResourceTable.updateItem(updateItemSpec);
     }
 }
