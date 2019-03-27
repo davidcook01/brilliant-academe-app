@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import axios from 'axios';
-// import vidControls from '../../../assets/js/video-controls.js';
+import * as $ from '../../../assets/js/jquery-2.1.1.js';
+import vidControls from '../../../assets/js/video-controls.js';
 
-// vidControls();
 
 interface Video {
-  courseSection: []
+  courseSection: [];
 }
 
 @Component({
@@ -15,11 +15,11 @@ interface Video {
   templateUrl: './video.component.html',
   styleUrls: ['./video.component.css']
 })
-export class VideoComponent implements OnInit {
-
+export class VideoComponent implements AfterViewInit, OnInit {
+  @ViewChildren('video') video: QueryList<any>;
   courseId: String;
   public videos: Video[];
-  
+
   constructor(
     private route: ActivatedRoute,
     private location: Location
@@ -39,16 +39,27 @@ export class VideoComponent implements OnInit {
   public async showVideos() {
     const videos = await this.getVideos();
     if (videos) {
-      this.videos.push(videos.data.courseSection); 
+      this.videos.push(videos.data.courseSection);
     }
   }
 
+
+
   ngOnInit() {
+
+
     this.getCourseId();
     this.showVideos();
   }
 
-  getCourseId():void{
+
+  ngAfterViewInit() {
+    console.log(this.video);
+    // const videoEl = (<HTMLInputElement>document.getElementById('video'));
+    // console.log(videoEl);
+  }
+
+  getCourseId(): void {
     const id = this.route.snapshot.paramMap.get('courseId');
     this.courseId = id;
   }

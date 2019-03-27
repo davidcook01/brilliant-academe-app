@@ -1,4 +1,6 @@
-function vidControls(){
+import $ from './jquery-2.1.1.js';
+
+export default function vidControls(){
     $(document).ready(function() {
         function Video(playing) {
             this.nowPlaying = playing;
@@ -8,7 +10,7 @@ function vidControls(){
             let vidNum = 0;
             const videoTitle = $("#videoTitle").get(0);
             this.anArray = [];
-            
+
             // this.getCourses = async () => {
             //     const proxyurl = "https://cors-anywhere.herokuapp.com/";
             //     const url = "https://ir3v0f4teh.execute-api.us-east-1.amazonaws.com/ba-api/course/46efdce8-6a69-4e69-aa8b-fcc0aa9d2d95"; // site that doesn’t send Access-Control-*
@@ -18,21 +20,21 @@ function vidControls(){
             //         console.error(error)
             //     }
             // }
-           
+
             // this.showCourses = async (aFunction) => {
             //     return new Promise(resolve => {
             //         resolve(aFunction);
             //     });
             // }
-              
+
             // const defer = (callee, args) => {
             //     return new Promise(resolve => {
             //         resolve(callee(args));
             //     });
             // };
-           
+
             // this.anArray.push(defer(this.showCourses, this.getCourses())); // returns immediately
-            
+
             // Promise.all(this.anArray).then(results => {
             //     let lectures = results[0].data.courseSection[0].lectures;
             //     let examplePlaylist = [];
@@ -65,7 +67,7 @@ function vidControls(){
             //             }
             //         });
             //     };
-    
+
             //     // Load next video
             //     loadNext = function() {
             //         let lastVideo = examplePlaylist.length - 1;
@@ -89,7 +91,7 @@ function vidControls(){
             //     // console.log(results[0].data.courseSection[0].lectures[0].lectureLink);
             // });
 
-            
+
             // Resets video current time to 0
             this.replay = function() {
                 $("#replayBtn").on('click', function(){
@@ -111,7 +113,7 @@ function vidControls(){
                 });
             }
 
-            // Toggles play/pause with space bar keypress 
+            // Toggles play/pause with space bar keypress
             this.spacebarPlayPause = function() {
                 // Listener for user focused element in body
                 $(document).on('click','body *',function(){
@@ -125,12 +127,12 @@ function vidControls(){
                             spacePlayPause.preventDefault();
                             this.nowPlaying = true;
                             videoEl.play();
-                        } 
+                        }
                         else if (spacePlayPause.keyCode == 32 && this.nowPlaying && focused != "INPUT") {
                             spacePlayPause.preventDefault();
                             this.nowPlaying = false;
                             videoEl.pause();
-                        } 
+                        }
                         // If user has clicked on a form
                         // then spacebar has default functionality
                         else if (focused == "INPUT") {
@@ -139,8 +141,8 @@ function vidControls(){
                     }
                 });
             };
-            
-            // Progress bar displays percentage of video played 
+
+            // Progress bar displays percentage of video played
             function updateProgress() {
                 let percentage = (100 / videoEl.duration) * videoEl.currentTime;
                 progressBar.value = percentage.toFixed(2);
@@ -160,8 +162,8 @@ function vidControls(){
                 }
                 progressBar.addEventListener('click', seek); // jQuery didn't work for this...
             }
-            
-            // Button rewind by 10 seconds 
+
+            // Button rewind by 10 seconds
             this.seekMinus = function() {
                 $("#seekMinusBtn").on('click', function(){
                     videoEl.currentTime = Math.min(videoEl.currentTime - skipTime, videoEl.duration);
@@ -199,7 +201,7 @@ function vidControls(){
                         document.cancelFullScreen();
                         } else {
                             videoEl.requestFullscreen();
-                        } 
+                        }
                     else if (videoEl.msRequestFullscreen)
                         if (document.msFullscreenElement) {
                             document.msExitFullscreen();
@@ -220,13 +222,13 @@ function vidControls(){
                         }
                     else {
                         alert("Fullscreen API is not supported");
-                        
+
                     }
                 });
             }
         };
-        
-        vid = new Video(true);
+
+        const vid = new Video(true);
 
         vid.replay();
         vid.playPause();
@@ -236,9 +238,8 @@ function vidControls(){
         vid.seekPlus();
         vid.muteVolume();
         vid.toggleFullscreen();
-        
+
     });
 
 };
 
-module.exports = vidControls;
