@@ -1,10 +1,7 @@
-import { Component, OnInit, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import axios from 'axios';
-import * as $ from '../../../assets/js/jquery-2.1.1.js';
-import vidControls from '../../../assets/js/video-controls.js';
-
 
 interface Video {
   courseSection: [];
@@ -15,8 +12,7 @@ interface Video {
   templateUrl: './video.component.html',
   styleUrls: ['./video.component.css']
 })
-export class VideoComponent implements AfterViewInit, OnInit {
-  @ViewChildren('video') video: QueryList<any>;
+export class VideoComponent implements OnInit {
   courseId: String;
   public videos: Video[];
 
@@ -43,20 +39,9 @@ export class VideoComponent implements AfterViewInit, OnInit {
     }
   }
 
-
-
   ngOnInit() {
-
-
     this.getCourseId();
     this.showVideos();
-  }
-
-
-  ngAfterViewInit() {
-    console.log(this.video);
-    // const videoEl = (<HTMLInputElement>document.getElementById('video'));
-    // console.log(videoEl);
   }
 
   getCourseId(): void {

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule,ReactiveFormsModule } from '@angular/forms'; 
+import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthService } from './services/auth-service';
@@ -11,7 +11,6 @@ import {HttpClientModule} from '@angular/common/http';
 import { CreateCourseInfoComponent } from './instructor/create-course-info/create-course-info.component';
 import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component';
 import { HomeComponent } from './home/home.component';
-import { PlaylistComponent } from './student/playlist/playlist.component';
 import { VideoComponent } from './student/video/video.component';
 
 @NgModule({
@@ -20,7 +19,6 @@ import { VideoComponent } from './student/video/video.component';
     CreateCourseInfoComponent,
     EnrolledCoursesComponent,
     HomeComponent,
-    PlaylistComponent,
     VideoComponent
   ],
   imports: [
