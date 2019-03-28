@@ -41,7 +41,7 @@ export class EnrolledCoursesComponent implements OnInit {
   public async showCourses() {
     const courses = await this.getCourses();
     if (courses) {
-      this.courses.push(courses.data.courses); 
+      this.courses.push(courses.data.courses);
       console.log(this.courses);
     }
   }
