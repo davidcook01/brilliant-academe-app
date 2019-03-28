@@ -85,12 +85,7 @@ public class PaymentGatewayHandler implements RequestHandler<PaymentGatewayReque
             BigDecimal courseDuration = (BigDecimal) item.get("courseDuration");
             putItemSpec.withItem(new Item()
                     .withString("userId", request.getUserId())
-                    .withString("courseId", (String) item.get("id"))
-                    .withString("courseName", (String) item.get("courseName"))
-                    .withString("description", (String) item.get("description"))
-                    .withString("coverImage", (String) item.get("coverImage"))
-                    .withString("instructorId", (String) item.get("instructorId"))
-                    .withString("instructorName", (String) item.get("instructorName"))
+                    .withString("courseId", courseId)
                     .withNumber("percentageCompleted", 0)
                     .withNumber("courseDuration", courseDuration.floatValue()));
             putItemSpecs.add(putItemSpec);
