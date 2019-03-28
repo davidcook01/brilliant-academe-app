@@ -6,11 +6,13 @@ import {AuthService} from './services/auth-service';
 import { HttpClient } from '@angular/common/http';
 import * as $ from 'jquery';
 
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent implements OnInit {
   loginForm: FormGroup;
   signUpForm: FormGroup;
@@ -21,7 +23,7 @@ export class AppComponent implements OnInit {
   errorMsgSignup : string ;
   errorMsgConfirmSignUp: string;
   errorMsg : string ;
-
+  userId : string;
 
 
   constructor(
@@ -182,15 +184,14 @@ export class AppComponent implements OnInit {
   onSubmitLogin() {
     const email = this.loginForm.value.email, password = this.loginForm.value.password;
    
-   //console.log(this.loginForm.value);
-    // this.logger.log("email:" + email);
-    // this.logger.log("password:" + password);
+ 
      this.auth.signIn(email, password)
       .subscribe(
         result => {
-          var userId = result.username ;
-          console.log(userId);
+          this.userId = result.username ;
+          console.log("App component :  "+this.userId);
           eval("$('#signin').modal('hide')") ;
+          eval("$('#login_button').modal('hide')") ;
           alert("signIn success...");
           this.router.navigate(['/myhome']);
         },
@@ -201,7 +202,7 @@ export class AppComponent implements OnInit {
             eval("$('#signin').modal('hide')") ;
             this.auth.resendSignUp(email).subscribe(
                   result => {
-                    
+                    eval("$('#login_button').modal('hide')") ;
                   },
                   error =>{
                     this.errorMsgConfirmSignUp = error.message;

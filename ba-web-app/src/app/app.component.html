@@ -216,17 +216,17 @@
                 <li class="nav-item"> <a class="nav-link " href="#">Top Instructors </a> </li>
                 <li class="nav-item"> <a class="nav-link " href="#" > About Us </a> </li>
                 <li class="nav-item"> <a class="nav-link " data-toggle="modal" data-target="#signup"> Register</a> </li>
-                <button type="button" class="btn pull-right " data-toggle="modal" data-target="#signin">Login</button>
+                <button *ngIf="!(userId)" type="button" class="btn pull-right" data-toggle="modal" data-target="#signin">Login</button>
               </ul>
             </div>
           </nav>
         </div>
         <div class="float-right">
           
-			<i class="glyph-icon flaticon-magnifying-glass padd_lft_15 sm_div pull-right" data-toggle="collapse" data-target="#filter-panel"></i> 
+      <i id="linkstopage" class="glyph-icon flaticon-magnifying-glass padd_lft_15 sm_div pull-right" data-toggle="collapse" data-target="#filter-panel"></i> 
 		<a href="shopping_cart.html"><i class="glyph-icon flaticon-shopping-bag padd_lft_15 sm_div1 pull-right"><span>4</span> </i></a>
-		   <a class="border_outer nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">AR </a>
-          <div class="dropdown-menu  dropdown-menu-right " aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#">My Notifications</a> <a class="dropdown-item" href="inner.html"> My Messages</a> <a class="dropdown-item" href="#"> My Courses</a> <a class="dropdown-item" href="#">Instructor Dashboard</a> </div>
+       <a   *ngIf="userId" class="border_outer nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">AR </a>
+          <div class="dropdown-menu  dropdown-menu-right " aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#">My Notifications</a> <a class="dropdown-item" href="inner.html"> My Messages</a> <a class="dropdown-item"routerLink="/courses/{{userId}}">My Courses</a> <a class="dropdown-item" href="#">Instructor Dashboard</a> </div>
 				
 		  </div>
       </div>

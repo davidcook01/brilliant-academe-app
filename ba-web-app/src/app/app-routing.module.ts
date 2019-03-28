@@ -17,7 +17,7 @@ const routes: Routes = [
     component: CreateCourseInfoComponent
   },
   { 
-    path: 'courses', 
+    path: 'courses/:userId', 
     component: EnrolledCoursesComponent 
   },
   {
