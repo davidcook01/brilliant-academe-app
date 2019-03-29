@@ -33,6 +33,7 @@
     "jquery.easing": "^1.4.1",
     "npm": "^6.2.0",
     "rxjs": "^6.3.0",
+    "videogular2": "^6.4.0",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {
@@ -40,6 +41,7 @@
     "@angular/cli": "~6.1.5",
     "@angular/compiler-cli": "^7.2.8",
     "@angular/language-service": "^6.0.3",
+    "@types/core-js": "^2.5.0",
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/jquery": "^3.3.1",

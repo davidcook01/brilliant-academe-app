@@ -50,9 +50,30 @@
                   <div class="academy-video">
                       <div class="play-list-crd  brd-box">
                         <h1>{{ videos[0][0].lectures[0].lectureTitle }}</h1>
-                        <video class=" card-img-top img-fluid" controls>
-                          <source src='{{ videos[0][0].lectures[0].lectureLink }}' type="video/mp4">
-                        </video>
+                        <vg-player>
+                          <vg-controls>
+                              <vg-play-pause></vg-play-pause>
+                              <vg-playback-button></vg-playback-button>
+
+                              <vg-time-display vgProperty="current" vgFormat="mm:ss"></vg-time-display>
+
+                              <vg-scrub-bar>
+                                  <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
+                                  <vg-scrub-bar-buffering-time></vg-scrub-bar-buffering-time>
+                              </vg-scrub-bar>
+
+                              <vg-time-display vgProperty="total" vgFormat="mm:ss"></vg-time-display>
+
+                              <vg-mute></vg-mute>
+                              <vg-volume></vg-volume>
+
+                              <vg-fullscreen></vg-fullscreen>
+                          </vg-controls>
+
+                          <video #media [vgMedia]="media" id="singleVideo" preload="auto" crossorigin>
+                              <source src="https://cors-anywhere.herokuapp.com/{{ videos[0][0].lectures[0].lectureLink }}" type="video/mp4">
+                          </video>
+                        </vg-player>
                       </div>
                     </div>
                   </div>

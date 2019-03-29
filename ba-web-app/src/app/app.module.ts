@@ -12,6 +12,8 @@ import { CreateCourseInfoComponent } from './instructor/create-course-info/creat
 import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component';
 import { HomeComponent } from './home/home.component';
 import { VideoComponent } from './student/video/video.component';
+import { VgCoreModule } from 'videogular2/core';
+import { VgControlsModule } from 'videogular2/controls';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,9 @@ import { VideoComponent } from './student/video/video.component';
     FormsModule,
     ReactiveFormsModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    VgCoreModule,
+    VgControlsModule
   ],
   providers: [ AuthService, AuthGuardService, LoggerService, TrainingService ],
   bootstrap: [AppComponent]
