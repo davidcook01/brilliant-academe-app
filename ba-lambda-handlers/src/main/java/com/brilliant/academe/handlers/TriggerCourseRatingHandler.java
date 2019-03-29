@@ -1,6 +1,5 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
@@ -16,13 +15,11 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Objects;
 
+import static com.brilliant.academe.constant.Constant.*;
+
 public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent, Void> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
-    private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
-    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
-    private Regions REGION = Regions.US_EAST_1;
+    private DynamoDB dynamoDB;
 
     @Override
     public Void handleRequest(DynamodbEvent dynamodbEvent, Context context) {
@@ -34,18 +31,18 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        dynamoDB = new DynamoDB(client);
     }
 
-    private Void execute(DynamodbEvent dynamodbEvent) {
+    public Void execute(DynamodbEvent dynamodbEvent) {
         for (DynamodbEvent.DynamodbStreamRecord record : dynamodbEvent.getRecords()) {
             if (record == null) {
                 continue;
             }
-            System.out.println(record);
-            System.out.println("Event Type:"+ record.getEventName());
+            System.out.println();
+            System.out.println("Record:"+ record+ ", Event Type:"+ record.getEventName());
             if(Objects.nonNull(record) && Objects.nonNull(record.getEventName())){
-                if(record.getEventName().equals("MODIFY")){
+                if(record.getEventName().equals(EVENT_MODIFY)){
                     String oldRating = "";
                     String newRating = "";
                     if(Objects.nonNull(record.getDynamodb().getOldImage().get("courseRating"))){
@@ -74,8 +71,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
     }
 
     private Float calculateAverageRating(String courseId){
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER_COURSE);
-        Index index = table.getIndex("courseId-index");
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("courseId-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("courseId = :v_course_id")
                 .withValueMap(new ValueMap()
@@ -94,7 +90,6 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
                     count++;
                 }
             }
-
         }
         Float averageRating = courseRating/(new Float(count));
         System.out.println("Total Course Count:"+ count + ", Total Rating:" + courseRating + ", Average Rating:"+ averageRating);
@@ -102,8 +97,7 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
     }
 
     private void updateRatingsInCourseTable(String courseId, Float averageRating){
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
-        Index index = table.getIndex("id-index");
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).getIndex("id-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("id = :v_course_id")
                 .withValueMap(new ValueMap()
@@ -121,15 +115,14 @@ public class TriggerCourseRatingHandler implements RequestHandler<DynamodbEvent,
                     .withUpdateExpression("set #p = :courseRating")
                     .withNameMap(new NameMap().with("#p", "courseRating"))
                     .withValueMap(new ValueMap().withNumber(":courseRating", averageRating));
-            table.updateItem(updateItemSpec);
+            dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).updateItem(updateItemSpec);
         }
 
-        Table courseResourceTable = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey("id", courseId)
                 .withUpdateExpression("set #p = :courseRating")
                 .withNameMap(new NameMap().with("#p", "courseRating"))
                 .withValueMap(new ValueMap().withNumber(":courseRating", averageRating));
-        courseResourceTable.updateItem(updateItemSpec);
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpec);
     }
 }

@@ -1,6 +1,5 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -18,29 +17,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
+import static com.brilliant.academe.constant.Constant.*;
+
 public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, CreateCourseResponse> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
-    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
-    private Regions REGION = Regions.US_EAST_1;
-    private String S3_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-video-upload/";
-    private String courseId = "";
+    private DynamoDB dynamoDB;
+    private String courseId;
 
     @Override
     public CreateCourseResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
-        this.initDynamoDbClient();
-        persistData(createCourseRequest);
-        CreateCourseResponse response = new CreateCourseResponse();
-        response.setMessage(courseId);
-        return response;
+        initDynamoDbClient();
+        return execute(createCourseRequest);
     }
 
     private void initDynamoDbClient() {
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        dynamoDB = new DynamoDB(client);
+    }
+
+    public CreateCourseResponse execute(CreateCourseRequest createCourseRequest){
+        persistData(createCourseRequest);
+        CreateCourseResponse response = new CreateCourseResponse();
+        response.setMessage(courseId);
+        return response;
     }
 
     private void persistData(CreateCourseRequest createCourseRequest)
@@ -61,7 +62,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
             });
         }
 
-        String sectionDetails = "";
+        String sectionDetails = "NA";
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             sectionDetails = objectMapper.writeValueAsString(createCourseRequest.getSections());
@@ -69,7 +70,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
             e.printStackTrace();
         }
 
-        Table courseTable = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
+        Table courseTable = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE);
         courseId = UUID.randomUUID().toString();
         for(CourseCategory courseCategory: createCourseRequest.getCourseCategories()){
             courseTable.putItem(new PutItemSpec().withItem(new Item()
@@ -89,7 +90,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("courseType", createCourseRequest.getCourseType())));
         }
 
-        dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
                 .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", courseId)
                     .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
@@ -104,5 +105,4 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("courseType", createCourseRequest.getCourseType())
                     .withJSON("resources", sectionDetails)));
     }
-
 }

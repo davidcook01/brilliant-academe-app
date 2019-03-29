@@ -1,6 +1,5 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
@@ -20,30 +19,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.brilliant.academe.constant.Constant.*;
+
 public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseRequest, GetStudentCourseResponse> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
-    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
-    private Regions REGION = Regions.US_EAST_1;
+    private DynamoDB dynamoDB;
 
     @Override
     public GetStudentCourseResponse handleRequest(GetStudentCourseRequest studentCourseRequest, Context context) {
         this.initDynamoDbClient();
-        return getData(studentCourseRequest);
+        return execute(studentCourseRequest);
     }
 
     private void initDynamoDbClient() {
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        this.dynamoDB = new DynamoDB(client);
     }
 
-    private GetStudentCourseResponse getData(GetStudentCourseRequest getStudentCourseRequest){
-
-        Table userCourseTable = dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER_COURSE);
-        Index index = userCourseTable.getIndex("userId-index");
+    public GetStudentCourseResponse execute(GetStudentCourseRequest getStudentCourseRequest){
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("userId-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("userId = :v_user_id")
                 .withValueMap(new ValueMap()
@@ -57,10 +53,15 @@ public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseR
 
         List<EnrollCourseInfo> enrollCourseInfos = new ArrayList<>();
 
+        String[] attributes = {"id", "courseDuration", "courseLevel", "courseName", "courseType",
+                "coverImage", "description", "discountedPrice",
+                "instructorId", "instructorName", "price", "courseRating"};
+
         if(Objects.nonNull(enrolledCourses) && enrolledCourses.size() > 0){
-            BatchGetItemOutcome batchGetItemOutcome = dynamoDb.batchGetItem(new BatchGetItemSpec()
+            BatchGetItemOutcome batchGetItemOutcome = dynamoDB.batchGetItem(new BatchGetItemSpec()
                     .withTableKeyAndAttributes(new TableKeysAndAttributes(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
                             .withHashOnlyKeys("id", enrolledCourses.toArray())
+                            .withAttributeNames(attributes)
                             .withConsistentRead(true)));
             List<Item> courseItemsList = batchGetItemOutcome.getTableItems().get(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
             ObjectMapper objectMapper = new ObjectMapper();

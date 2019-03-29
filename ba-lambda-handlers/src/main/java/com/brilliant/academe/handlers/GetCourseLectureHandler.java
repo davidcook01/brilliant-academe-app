@@ -1,11 +1,9 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -15,31 +13,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE_RESOURCE;
+import static com.brilliant.academe.constant.Constant.REGION;
+
 public class GetCourseLectureHandler  implements RequestHandler<GetCourseLectureRequest, GetCourseLectureResponse> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
-    private Regions REGION = Regions.US_EAST_1;
+    private DynamoDB dynamoDB;
 
     @Override
     public GetCourseLectureResponse handleRequest(GetCourseLectureRequest courseRequest, Context context) {
         this.initDynamoDbClient();
-        return getData(courseRequest);
+        return execute(courseRequest);
     }
 
     private void initDynamoDbClient() {
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        this.dynamoDB = new DynamoDB(client);
     }
 
-    private GetCourseLectureResponse getData(GetCourseLectureRequest courseRequest){
-        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE);
+    public GetCourseLectureResponse execute(GetCourseLectureRequest courseRequest){
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseRequest.getCourseId())
                 .withAttributesToGet("id", "resources");
-        Item item = table.getItem(itemSpec);
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
         GetCourseLectureResponse response = new GetCourseLectureResponse();
         ObjectMapper objectMapper = new ObjectMapper();
         try {

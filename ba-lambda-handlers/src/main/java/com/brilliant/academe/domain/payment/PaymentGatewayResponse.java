@@ -1,21 +1,30 @@
 package com.brilliant.academe.domain.payment;
 
-import com.stripe.model.Charge;
-
 import java.io.Serializable;
 
 public class PaymentGatewayResponse implements Serializable {
 
-    private Charge result;
+    private String orderId;
+    private String transactionId;
     private boolean isPaymentSuccess;
     private boolean isEnrollmentSuccess;
+    private boolean isCartUpdated;
+    private boolean isOrderUpdated;
 
-    public Charge getResult() {
-        return result;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public void setResult(Charge result) {
-        this.result = result;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
     public boolean isPaymentSuccess() {
@@ -32,5 +41,21 @@ public class PaymentGatewayResponse implements Serializable {
 
     public void setEnrollmentSuccess(boolean enrollmentSuccess) {
         isEnrollmentSuccess = enrollmentSuccess;
+    }
+
+    public boolean isCartUpdated() {
+        return isCartUpdated;
+    }
+
+    public void setCartUpdated(boolean cartUpdated) {
+        isCartUpdated = cartUpdated;
+    }
+
+    public boolean isOrderUpdated() {
+        return isOrderUpdated;
+    }
+
+    public void setOrderUpdated(boolean orderUpdated) {
+        isOrderUpdated = orderUpdated;
     }
 }

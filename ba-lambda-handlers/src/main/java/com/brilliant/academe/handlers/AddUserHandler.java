@@ -1,6 +1,5 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -11,37 +10,37 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.user.CognitoPostConfirmationRequest;
 
+import static com.brilliant.academe.constant.Constant.*;
+
 public class AddUserHandler implements RequestHandler<CognitoPostConfirmationRequest, String> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_USER = "ba_user";
-    private Regions REGION = Regions.US_EAST_1;
+    private DynamoDB dynamoDB;
 
     @Override
     public String handleRequest(CognitoPostConfirmationRequest cognitoPostConfirmationRequest, Context context) {
-        System.out.println("CognitoPostConfirmation Request - Start");
-        System.out.println("User Id: "+ cognitoPostConfirmationRequest.getUserName());
-        System.out.println("Email:"+cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"));
-        this.initDynamoDbClient();
-        persistData(cognitoPostConfirmationRequest);
-        System.out.println("CognitoPostConfirmation Request - End");
-        return "SUCCESS";
+        initDynamoDbClient();
+        return execute(cognitoPostConfirmationRequest);
     }
 
     private void initDynamoDbClient() {
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        dynamoDB = new DynamoDB(client);
+    }
+
+    public String execute(CognitoPostConfirmationRequest cognitoPostConfirmationRequest){
+        System.out.println("User Id: "+ cognitoPostConfirmationRequest.getUserName()
+                + "Email:"+cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"));
+        persistData(cognitoPostConfirmationRequest);
+        return STATUS_SUCCESS;
     }
 
     private void persistData(CognitoPostConfirmationRequest cognitoPostConfirmationRequest)
             throws ConditionalCheckFailedException {
-        this.dynamoDb.getTable(DYNAMODB_TABLE_NAME_USER)
-            .putItem(
-                new PutItemSpec().withItem(new Item()
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER)
+            .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", cognitoPostConfirmationRequest.getUserName())
                     .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))));
     }
-
 }

@@ -1,9 +1,11 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Index;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -20,11 +22,12 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE;
+import static com.brilliant.academe.constant.Constant.REGION;
+
 public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, FilterCourseResponse> {
 
-    private DynamoDB dynamoDb;
-    private String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
-    private Regions REGION = Regions.US_EAST_1;
+    private DynamoDB dynamoDB;
 
     @Override
     public FilterCourseResponse handleRequest(FilterCourseRequest filterCourseRequest, Context context) {
@@ -36,10 +39,10 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDb = new DynamoDB(client);
+        dynamoDB = new DynamoDB(client);
     }
 
-    private FilterCourseResponse execute(FilterCourseRequest filterCourseRequest){
+    public FilterCourseResponse execute(FilterCourseRequest filterCourseRequest){
         FilterCourseResponse response = new FilterCourseResponse();
         List<FilterCourseInfo> filterCourseInfos = new ArrayList<>();
 
@@ -52,8 +55,7 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
             ObjectMapper objectMapper = new ObjectMapper();
 
             if(type.equals("query")){
-                Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
-                Index index = table.getIndex(filterName+"-index");
+                Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).getIndex(filterName+"-index");
 
                 ValueMap valueMap = new ValueMap();
                 valueMap.withString(":v_"+filterName, filterValue);
@@ -92,14 +94,12 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
                 items = index.query(querySpec);
 
             }else{
-                Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME_COURSE);
-
                 ScanSpec scanSpec = new ScanSpec()
                         .withFilterExpression("contains( "+filterName+" , :v_"+filterName+")")
                         .withValueMap(new ValueMap()
                                 .withString(":v_"+filterName+"",filterValue));
 
-                items = table.scan(scanSpec);
+                items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).scan(scanSpec);
             }
 
             Iterator<Item> iter = items.iterator();

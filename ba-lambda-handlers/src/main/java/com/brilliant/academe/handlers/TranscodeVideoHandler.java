@@ -14,11 +14,12 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.brilliant.academe.constant.Constant.ELASTIC_TRANSCODER_PIPELINE_ID;
+
 public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
 
     private AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
     private AmazonElasticTranscoder amazonElasticTranscoder = AmazonElasticTranscoderClient.builder().build();
-    private static final String PIPELINE_ID = "1551221588927-5zpuyx";
 
     @Override
     public String handleRequest(S3Event event, Context context) {
@@ -52,7 +53,7 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
             outputs.add(output3);
 
             // Create a job on the specified pipeline and return the job ID.
-            CreateJobRequest createJobRequest = new CreateJobRequest().withPipelineId(PIPELINE_ID)
+            CreateJobRequest createJobRequest = new CreateJobRequest().withPipelineId(ELASTIC_TRANSCODER_PIPELINE_ID)
                     .withOutputKeyPrefix(outputKey + "/").withInput(input).withOutputs(outputs);
 
             return amazonElasticTranscoder.createJob(createJobRequest).getJob().getId();
