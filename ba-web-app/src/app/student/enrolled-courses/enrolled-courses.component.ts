@@ -33,7 +33,7 @@ export class EnrolledCoursesComponent implements OnInit {
 
   public async getCourses() {
     try {
-      return await axios.get('https://cors-anywhere.herokuapp.com/https://dxumyaeyh4.execute-api.us-east-1.amazonaws.com/ba-api/user/afff130b-0e99-4234-9b2d-db85224c1280/enrollment')
+      return await axios.get('https://cors-anywhere.herokuapp.com/https://dxumyaeyh4.execute-api.us-east-1.amazonaws.com/ba-api/user/8200d6cd-fba6-48c1-99b9-be771d2bce9b/enrollment')
     } catch (error) {
       console.error(error)
     }

@@ -3,10 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import axios from 'axios';
 
-interface Video {
-  courseSection: [];
-}
-
 @Component({
   selector: 'app-video',
   templateUrl: './video.component.html',
@@ -14,9 +10,9 @@ interface Video {
 })
 export class VideoComponent implements OnInit {
   courseId: String;
-  public videos: Video[];
-  public lectures: String[];
-  public currentVideoURL: String ;
+  public videos: Array<any>;
+  public lectures: Object[];
+  public currentVideoURL: String;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,21 +28,24 @@ export class VideoComponent implements OnInit {
     try {
       return await axios.get(proxyurl + url + this.courseId + '/lectures');
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   }
 
-  public pushLink(lectureLink) {
-    console.log(lectureLink);
-    this.lectures.push(lectureLink);
-
-  }
   public async showVideos() {
     const videos = await this.getVideos();
     if (videos) {
       this.videos.push(videos.data.courseSection);
+      this.videos.forEach(course => {
+        course.forEach(lecture => {
+          lecture.lectures.forEach(lectureObj => {
+            this.lectures.push(lectureObj);
+          });
+        });
+      });
     }
-    console.log(this.videos);
+    console.log(this.lectures);
+    console.log(this.videos[0]);
   }
 
   ngOnInit() {
@@ -59,5 +58,4 @@ export class VideoComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('courseId');
     this.courseId = id;
   }
-
 }
