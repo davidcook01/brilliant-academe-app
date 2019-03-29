@@ -55,7 +55,7 @@ public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseR
 
         String[] attributes = {"id", "courseDuration", "courseLevel", "courseName", "courseType",
                 "coverImage", "description", "discountedPrice",
-                "instructorId", "instructorName", "price", "courseRating"};
+                "instructorId", "instructorName", "price"};
 
         if(Objects.nonNull(enrolledCourses) && enrolledCourses.size() > 0){
             BatchGetItemOutcome batchGetItemOutcome = dynamoDB.batchGetItem(new BatchGetItemSpec()
