@@ -47,14 +47,16 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     private void persistData(CreateCourseRequest createCourseRequest)
             throws ConditionalCheckFailedException {
 
+        String formattedCourseName = createCourseRequest.getCourseName().replaceAll(" ", "+");
+
         if(createCourseRequest.getSections() != null && createCourseRequest.getSections().size() > 0){
             createCourseRequest.getSections().forEach(section -> {
                 if(section.getLectures() != null && section.getLectures().size() > 0){
                     section.getLectures().forEach(lecture->{
-                        lecture.setLectureLink(S3_UPLOAD_FOLDER+createCourseRequest.getCourseName()+"/"+lecture.getLectureLink());
+                        lecture.setLectureLink(formattedCourseName+"/"+lecture.getLectureLink());
                         if(lecture.getMaterials()!= null && lecture.getMaterials().size() > 0) {
                             lecture.getMaterials().forEach(material -> {
-                                material.setMaterialLink(S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + material.getMaterialLink());
+                                material.setMaterialLink(formattedCourseName + "/" + material.getMaterialLink());
                             });
                         }
                     });
@@ -77,7 +79,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("id", courseId)
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
-                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + createCourseRequest.getCoverImage())
+                    .withString("coverImage", formattedCourseName + "/" + createCourseRequest.getCoverImage())
                     .withString("courseLevel", createCourseRequest.getCourseLevel())
                     .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
@@ -97,7 +99,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
-                    .withString("coverImage", S3_UPLOAD_FOLDER + createCourseRequest.getCourseName() + "/" + createCourseRequest.getCoverImage())
+                    .withString("coverImage",formattedCourseName + "/" + createCourseRequest.getCoverImage())
                     .withString("courseLevel", createCourseRequest.getCourseLevel())
                     .withString("instructorId", createCourseRequest.getInstructorId())
                     .withString("instructorName", createCourseRequest.getInstructorName())

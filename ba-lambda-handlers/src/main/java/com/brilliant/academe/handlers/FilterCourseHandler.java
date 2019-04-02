@@ -92,7 +92,6 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
                 }
 
                 items = index.query(querySpec);
-
             }else{
                 ScanSpec scanSpec = new ScanSpec()
                         .withFilterExpression("contains( "+filterName+" , :v_"+filterName+")")

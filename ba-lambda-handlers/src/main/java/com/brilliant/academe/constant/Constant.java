@@ -15,7 +15,6 @@ public class Constant {
     public static final String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
 
     public static final String STRIPE_SECRET_KEY = "sk_test_UTifZqEZPT8SyQBTrWCSwfAn00xySX7uI7";
-    public static final String S3_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-video-upload/";
     public static final String ELASTIC_TRANSCODER_PIPELINE_ID = "1551221588927-5zpuyx";
 
     public static final String STATUS_SAVE = "SAVE";
