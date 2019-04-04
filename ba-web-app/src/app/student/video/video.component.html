@@ -1,7 +1,8 @@
 <section class="bg_banner_inner text-center">
   <h2>Video</h2>
 </section>
-<ng-template [ngIf]="videos.length">
+<!-- <ng-template [ngIf]="videos.length"> -->
+<ng-template [ngIf]="true">
 <section class="container-fluid">
   <main role="main">
       <!--Instructor open-->
@@ -14,14 +15,14 @@
 
                           <!-- Accordion card -->
 
-                          <div class="card" *ngFor="let video of videos[0]">
-
+                          <!-- <div class="card" *ngFor="let video of videos[0]"> -->
+                              <div class="card">
                               <!-- Card header -->
                               <div class="card-header collapse-heading-video" role="tab" id="headingOne1">
                                   <a data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne1" aria-expanded="true"
                                      aria-controls="collapseOne1">
                                       <h5 class="mb-0">
-                                          {{ video.sectionName }}
+                                          <!-- {{ video.sectionName }} -->
                                       </h5>
                                   </a>
                               </div>
@@ -29,8 +30,9 @@
                               <!-- Card body -->
                               <div id="collapseOne1" class="collapse show" role="tabpanel" aria-labelledby="headingOne1" data-parent="#accordionEx">
                                   <div class="card-body">
-                                      <div class="chapter-info" *ngFor="let lecture of video.lectures ;">
-                                          {{ lecture.lectureTitle }}
+                                      <!-- <div class="chapter-info" *ngFor="let lecture of video.lectures;"> -->
+                                          <div class="chapter-info">
+                                          <!-- {{ lecture.lectureTitle }} -->
 
                                           <!-- Default unchecked --><div class="pull-right">
                                               <i class="fa fa-check viewed" aria-hidden="true"></i>
@@ -49,8 +51,41 @@
               <div class="col-12 col-lg-9 col-sm-7 bg_dark_right" id="listing">
                   <div class="academy-video">
                       <div class="play-list-crd  brd-box">
-                        <h1>{{ videos[0][0].lectures[0].lectureTitle }}</h1>
+                        <!-- <h1>{{ videos[0][0].lectures[0].lectureTitle }}</h1> -->
                         <vg-player>
+
+                            <vg-overlay-play></vg-overlay-play>
+                            <vg-buffering></vg-buffering>
+
+                            <vg-scrub-bar [vgSlider]="true">
+                                <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
+                                <vg-scrub-bar-buffering-time></vg-scrub-bar-buffering-time>
+                            </vg-scrub-bar>
+
+                            <vg-controls>
+                                <vg-play-pause></vg-play-pause>
+                                <vg-playback-button></vg-playback-button>
+
+                                <vg-time-display vgProperty="current" vgFormat="mm:ss"></vg-time-display>
+
+                                <vg-scrub-bar style="pointer-events: none;"></vg-scrub-bar>
+
+                                <vg-time-display vgProperty="total" vgFormat="mm:ss"></vg-time-display>
+
+                                <vg-track-selector></vg-track-selector>
+                                <vg-mute></vg-mute>
+                                <vg-volume></vg-volume>
+
+                                <vg-fullscreen></vg-fullscreen>
+                            </vg-controls>
+
+                            <video [vgMedia]="media" #media id="singleVideo" preload="auto" crossorigin>
+                                <source src="http://static.videogular.com/assets/videos/videogular.mp4" type="video/mp4">
+                                <track kind="subtitles" label="English" src="http://static.videogular.com/assets/subs/pale-blue-dot.vtt" srclang="en" default>
+                                <track kind="subtitles" label="Español" src="http://static.videogular.com/assets/subs/pale-blue-dot-es.vtt" srclang="es">
+                            </video>
+                        </vg-player>
+                        <!-- <vg-player>
                           <vg-controls>
                               <vg-play-pause></vg-play-pause>
                               <vg-playback-button></vg-playback-button>
@@ -70,10 +105,11 @@
                               <vg-fullscreen></vg-fullscreen>
                           </vg-controls>
 
-                          <video #media [vgMedia]="media" id="singleVideo" preload="auto" crossorigin>
-                              <source src="https://cors-anywhere.herokuapp.com/{{ videos[0][0].lectures[0].lectureLink }}" type="video/mp4">
+                          <video #media [vgMedia]="media" id="singleVideo" preload="auto" crossorigin> -->
+                              <!-- <source src="https://cors-anywhere.herokuapp.com/{{ videos[0][0].lectures[0].lectureLink }}" type="video/mp4"> -->
+                              <!-- <source src="http://static.videogular.com/assets/videos/videogular.mp4" type="video/mp4">
                           </video>
-                        </vg-player>
+                        </vg-player> -->
                       </div>
                     </div>
                   </div>

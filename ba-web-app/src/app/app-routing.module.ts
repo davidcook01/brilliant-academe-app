@@ -20,7 +20,8 @@ const routes: Routes = [
     component: EnrolledCoursesComponent
   },
   {
-    path: 'video/:courseId',
+    // path: 'video/:courseId',
+    path: 'video',
     component: VideoComponent
   }
 ];

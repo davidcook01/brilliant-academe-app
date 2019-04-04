@@ -14,6 +14,9 @@ import { HomeComponent } from './home/home.component';
 import { VideoComponent } from './student/video/video.component';
 import { VgCoreModule } from 'videogular2/core';
 import { VgControlsModule } from 'videogular2/controls';
+import { VgBufferingModule } from 'videogular2/buffering';
+import { VgOverlayPlayModule } from 'videogular2/overlay-play';
+import { VgStreamingModule } from 'videogular2/streaming';
 
 @NgModule({
   declarations: [
@@ -30,7 +33,10 @@ import { VgControlsModule } from 'videogular2/controls';
     AppRoutingModule,
     HttpClientModule,
     VgCoreModule,
-    VgControlsModule
+    VgControlsModule,
+    VgBufferingModule,
+    VgOverlayPlayModule,
+    VgStreamingModule
   ],
   providers: [ AuthService, AuthGuardService, LoggerService, TrainingService ],
   bootstrap: [AppComponent]
