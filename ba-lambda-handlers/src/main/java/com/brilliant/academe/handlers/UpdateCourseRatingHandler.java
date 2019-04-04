@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.rating.UpdateCourseRatingRequest;
 import com.brilliant.academe.domain.rating.UpdateCourseRatingResponse;
+import com.brilliant.academe.util.CommonUtils;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -19,6 +20,9 @@ public class UpdateCourseRatingHandler implements RequestHandler<UpdateCourseRat
 
     @Override
     public UpdateCourseRatingResponse handleRequest(UpdateCourseRatingRequest updateCourseRatingRequest, Context context) {
+        System.out.println(updateCourseRatingRequest.getToken());
+        System.out.println(updateCourseRatingRequest.getBody().getCourseRating());
+        System.out.println(updateCourseRatingRequest.getCourseId());
         initDynamoDbClient();
         return execute(updateCourseRatingRequest);
     }
@@ -31,9 +35,10 @@ public class UpdateCourseRatingHandler implements RequestHandler<UpdateCourseRat
     }
 
     public UpdateCourseRatingResponse execute(UpdateCourseRatingRequest updateCourseRatingRequest) {
+        String userId = CommonUtils.getUserFromToken(updateCourseRatingRequest.getToken());
         Float courseRating = updateCourseRatingRequest.getBody().getCourseRating();
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey("userId", updateCourseRatingRequest.getUserId(), "courseId", updateCourseRatingRequest.getCourseId())
+                .withPrimaryKey("userId", userId, "courseId", updateCourseRatingRequest.getCourseId())
                 .withUpdateExpression("set #p = :courseRating")
                 .withNameMap(new NameMap().with("#p", "courseRating"))
                 .withValueMap(new ValueMap().withNumber(":courseRating", courseRating));

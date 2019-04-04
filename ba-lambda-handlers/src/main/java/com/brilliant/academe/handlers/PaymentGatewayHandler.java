@@ -11,7 +11,9 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.payment.PaymentGatewayRequest;
+import com.brilliant.academe.domain.payment.PaymentGatewayRequestInfo;
 import com.brilliant.academe.domain.payment.PaymentGatewayResponse;
+import com.brilliant.academe.util.CommonUtils;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
@@ -40,28 +42,77 @@ public class PaymentGatewayHandler implements RequestHandler<PaymentGatewayReque
     }
 
     public PaymentGatewayResponse execute(PaymentGatewayRequest request){
-        System.out.println("Token: "+request.getToken() + ", User Id:"+ request.getUserId() + ", Courses:"+ request.getCourses()
-                + "Payment Type:"+ request.getPaymentType() + "Amount:"+ request.getAmount() + "Currency:"+ request.getCurrency());
+        String userId = CommonUtils.getUserFromToken(request.getToken());
+        PaymentGatewayRequestInfo requestInfo = request.getInfo();
+        System.out.println("Token: "+requestInfo.getStripeToken() + ", Courses:"+ requestInfo.getCourses()
+                + "Payment Type:"+ requestInfo.getPaymentType() + "Amount:"+ requestInfo.getAmount() + "Currency:"+ requestInfo.getCurrency());
+
+        PaymentGatewayResponse paymentGatewayResponse = new PaymentGatewayResponse();
+        if(!checkCourseCountAndAmount(userId, requestInfo.getAmount(), requestInfo.getCourses())){
+            return paymentGatewayResponse;
+        }
 
         orderId = UUID.randomUUID().toString();
         Stripe.apiKey = STRIPE_SECRET_KEY;
 
         Map<String, Object> params = new HashMap<>();
-        params.put("source", request.getToken());
-        params.put("amount", request.getAmount());
-        params.put("currency", request.getCurrency());
+        params.put("source", requestInfo.getStripeToken());
+        params.put("amount", requestInfo.getAmount());
+        params.put("currency", requestInfo.getCurrency());
         params.put("description", "Charge");
 
-        PaymentGatewayResponse paymentGatewayResponse = new PaymentGatewayResponse();
         paymentGatewayResponse.setOrderId(orderId);
         Charge charge = initiateCharge(paymentGatewayResponse, params);
-        updateCart(paymentGatewayResponse, request.getUserId(),
-                request.getCourses(), orderId);
+        updateCart(paymentGatewayResponse, userId,
+                requestInfo.getCourses(), orderId);
         updateOrderDetails(paymentGatewayResponse, charge, orderId);
         if(paymentGatewayResponse.isPaymentSuccess()){
-            enrollCourses(paymentGatewayResponse, request);
+            enrollCourses(paymentGatewayResponse, request.getInfo(), userId);
         }
         return paymentGatewayResponse;
+    }
+
+    private boolean checkCourseCountAndAmount(String userId, BigDecimal amount, List<String> courses) {
+
+        boolean isCourseCountEqual = false;
+        boolean isTotalAmountEqual = false;
+
+        ItemCollection<QueryOutcome> items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).getIndex("userId-index").query(new QuerySpec()
+                .withKeyConditionExpression("userId = :v_user_id")
+                .withFilterExpression("cartStatus = :v_cart_status")
+                .withValueMap(new ValueMap().withString(":v_user_id", userId)
+                        .withString(":v_cart_status", STATUS_SAVE)));
+
+        int count = 0;
+        for(String courseId: courses){
+            for(Item item: items){
+                String cartCourseId = (String) item.get("courseId");
+                if(courseId.equals(cartCourseId)){
+                    count++;
+                }
+            }
+        }
+
+        if(count == courses.size()){
+            isCourseCountEqual = true;
+        }
+
+        BigDecimal totalAmount = new BigDecimal(0);
+
+        for (String courseId : courses) {
+            Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", courseId);
+            totalAmount = totalAmount.add((BigDecimal) item.get("discountedPrice"));
+        }
+
+        BigDecimal requestAmount = amount.divide(new BigDecimal(100));
+
+        if (totalAmount.equals(requestAmount))
+            isTotalAmountEqual = true;
+
+        if(isCourseCountEqual && isTotalAmountEqual)
+            return  true;
+
+        return false;
     }
 
     private Charge initiateCharge(PaymentGatewayResponse paymentGatewayResponse, Map params){
@@ -139,23 +190,23 @@ public class PaymentGatewayHandler implements RequestHandler<PaymentGatewayReque
         paymentGatewayResponse.setOrderUpdated(true);
     }
 
-    private void enrollCourses(PaymentGatewayResponse paymentGatewayResponse, PaymentGatewayRequest request){
+    private void enrollCourses(PaymentGatewayResponse paymentGatewayResponse, PaymentGatewayRequestInfo requestInfo, String userId){
         List<PutItemSpec> putItemSpecs = new ArrayList<>();
         BigDecimal totalAmount = new BigDecimal(0);
 
-        for(String courseId: request.getCourses()){
+        for(String courseId: requestInfo.getCourses()){
             Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", courseId);
             totalAmount = totalAmount.add((BigDecimal) item.get("discountedPrice"));
 
             PutItemSpec putItemSpec = new PutItemSpec();
             putItemSpec.withItem(new Item()
-                    .withString("userId", request.getUserId())
+                    .withString("userId", userId)
                     .withString("courseId", courseId)
                     .withNumber("percentageCompleted", 0));
             putItemSpecs.add(putItemSpec);
         }
 
-        BigDecimal requestAmount = request.getAmount().divide(new BigDecimal(100));
+        BigDecimal requestAmount = requestInfo.getAmount().divide(new BigDecimal(100));
 
         if(totalAmount.equals(requestAmount)){
             for(PutItemSpec spec: putItemSpecs){

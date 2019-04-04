@@ -8,9 +8,10 @@ import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.course.GetStudentCourseRequest;
-import com.brilliant.academe.domain.course.GetStudentCourseResponse;
 import com.brilliant.academe.domain.enrollment.EnrollCourseInfo;
+import com.brilliant.academe.domain.enrollment.GetEnrolledCourseRequest;
+import com.brilliant.academe.domain.enrollment.GetEnrolledCourseResponse;
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -21,14 +22,14 @@ import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseRequest, GetStudentCourseResponse> {
+public class GetEnrolledCourseHandler implements RequestHandler<GetEnrolledCourseRequest, GetEnrolledCourseResponse> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public GetStudentCourseResponse handleRequest(GetStudentCourseRequest studentCourseRequest, Context context) {
+    public GetEnrolledCourseResponse handleRequest(GetEnrolledCourseRequest enrolledCourseRequest, Context context) {
         this.initDynamoDbClient();
-        return execute(studentCourseRequest);
+        return execute(enrolledCourseRequest);
     }
 
     private void initDynamoDbClient() {
@@ -38,12 +39,13 @@ public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseR
         this.dynamoDB = new DynamoDB(client);
     }
 
-    public GetStudentCourseResponse execute(GetStudentCourseRequest getStudentCourseRequest){
+    public GetEnrolledCourseResponse execute(GetEnrolledCourseRequest enrolledCourseRequest){
+        String userId = CommonUtils.getUserFromToken(enrolledCourseRequest.getToken());
         Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("userId-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("userId = :v_user_id")
                 .withValueMap(new ValueMap()
-                        .withString(":v_user_id",getStudentCourseRequest.getUserId()));
+                        .withString(":v_user_id", userId));
 
         ItemCollection<QueryOutcome> userCourseItems = index.query(querySpec);
         List<String> enrolledCourses = new ArrayList();
@@ -89,8 +91,8 @@ public class GetStudentCourseHandler implements RequestHandler<GetStudentCourseR
             }
         }
 
-        GetStudentCourseResponse studentCourseResponse = new GetStudentCourseResponse();
-        studentCourseResponse.setCourses(enrollCourseInfos);
-        return studentCourseResponse;
+        GetEnrolledCourseResponse enrolledCourseResponse = new GetEnrolledCourseResponse();
+        enrolledCourseResponse.setCourses(enrollCourseInfos);
+        return enrolledCourseResponse;
     }
 }

@@ -13,7 +13,7 @@ public class GetCourseLectureResponse implements Serializable {
     private String courseId;
 
     @JsonProperty("resources")
-    private List courseSection;
+    private List<CourseSection> courseSection;
 
     public String getCourseId() {
         return courseId;
@@ -23,11 +23,11 @@ public class GetCourseLectureResponse implements Serializable {
         this.courseId = courseId;
     }
 
-    public List getCourseSection() {
+    public List<CourseSection> getCourseSection() {
         return courseSection;
     }
 
-    public void setCourseSection(List courseSection) {
+    public void setCourseSection(List<CourseSection> courseSection) {
         this.courseSection = courseSection;
     }
 }

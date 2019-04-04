@@ -9,6 +9,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.cart.CourseCartRequest;
 import com.brilliant.academe.domain.cart.CourseCartResponse;
+import com.brilliant.academe.util.CommonUtils;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -30,8 +31,9 @@ public class AddToCartHandler implements RequestHandler<CourseCartRequest, Cours
     }
 
     private CourseCartResponse execute(CourseCartRequest request){
+        String userId = CommonUtils.getUserFromToken(request.getToken());
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).putItem(new PutItemSpec().withItem(new Item()
-                        .withString("userId", request.getUserId())
+                        .withString("userId", userId)
                         .withString("courseId", request.getCourseId())
                         .withString("cartStatus", STATUS_SAVE)));
         CourseCartResponse response = new CourseCartResponse();

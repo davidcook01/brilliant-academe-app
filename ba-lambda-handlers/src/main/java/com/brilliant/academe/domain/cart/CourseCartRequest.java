@@ -7,15 +7,15 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourseCartRequest implements Serializable {
 
-    private String userId;
+    private String token;
     private String courseId;
 
-    public String getUserId() {
-        return userId;
+    public String getToken() {
+        return token;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getCourseId() {

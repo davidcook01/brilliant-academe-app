@@ -12,6 +12,7 @@ import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE_RESOURCE;
 import static com.brilliant.academe.constant.Constant.REGION;
@@ -39,11 +40,13 @@ public class GetCourseLectureHandler  implements RequestHandler<GetCourseLecture
                 .withAttributesToGet("id", "resources");
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
         GetCourseLectureResponse response = new GetCourseLectureResponse();
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            response = objectMapper.readValue(item.toJSON(), GetCourseLectureResponse.class);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(Objects.nonNull(item)){
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                response = objectMapper.readValue(item.toJSON(), GetCourseLectureResponse.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return response;
     }

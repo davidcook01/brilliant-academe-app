@@ -11,13 +11,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_LOOKUP;
-import static com.brilliant.academe.constant.Constant.REGION;
+import static com.brilliant.academe.constant.Constant.*;
 
 public class LookupMasterHandler implements RequestHandler<Void, LookupMasterResponse> {
 
     private DynamoDB dynamoDB;
-    private String LOOKUP_ID = "1";
 
     @Override
     public LookupMasterResponse handleRequest(Void request, Context context) {

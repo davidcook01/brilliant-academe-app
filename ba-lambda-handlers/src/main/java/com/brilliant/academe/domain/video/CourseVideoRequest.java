@@ -1,12 +1,12 @@
-package com.brilliant.academe.domain.rating;
+package com.brilliant.academe.domain.video;
 
 import java.io.Serializable;
 
-public class UpdateCourseRatingRequest implements Serializable {
+public class CourseVideoRequest implements Serializable {
 
     private String token;
     private String courseId;
-    private CourseRatingInfo body;
+    private String lectureId;
 
     public String getToken() {
         return token;
@@ -24,11 +24,11 @@ public class UpdateCourseRatingRequest implements Serializable {
         this.courseId = courseId;
     }
 
-    public CourseRatingInfo getBody() {
-        return body;
+    public String getLectureId() {
+        return lectureId;
     }
 
-    public void setBody(CourseRatingInfo body) {
-        this.body = body;
+    public void setLectureId(String lectureId) {
+        this.lectureId = lectureId;
     }
 }

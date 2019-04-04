@@ -30,12 +30,17 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
                 .build();
-        this.dynamoDB = new DynamoDB(client);
+        dynamoDB = new DynamoDB(client);
     }
 
     public GetCourseResponse execute(GetCourseRequest courseRequest){
+        String[] attributes = {"id", "courseDuration", "courseLevel", "courseName",
+                "courseType", "coverImage", "description", "discountedPrice",
+                "instructorId", "instructorName", "price", "courseRating"};
+
         GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", courseRequest.getCourseId());
+                .withPrimaryKey("id", courseRequest.getCourseId())
+                .withAttributesToGet(attributes);
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
         GetCourseResponse courseResponse = new GetCourseResponse();
         try {

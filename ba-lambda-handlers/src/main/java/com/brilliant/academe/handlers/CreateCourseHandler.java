@@ -53,9 +53,11 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
             createCourseRequest.getSections().forEach(section -> {
                 if(section.getLectures() != null && section.getLectures().size() > 0){
                     section.getLectures().forEach(lecture->{
+                        lecture.setLectureId(UUID.randomUUID().toString());
                         lecture.setLectureLink(formattedCourseName+"/"+lecture.getLectureLink());
                         if(lecture.getMaterials()!= null && lecture.getMaterials().size() > 0) {
                             lecture.getMaterials().forEach(material -> {
+                                material.setMaterialId(UUID.randomUUID().toString());
                                 material.setMaterialLink(formattedCourseName + "/" + material.getMaterialLink());
                             });
                         }
@@ -63,6 +65,13 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                 }
             });
         }
+
+        createCourseRequest.getSections().forEach(cs->{
+            cs.getLectures().forEach(lecture->{
+                lecture.setLectureId(UUID.randomUUID().toString());
+            });
+        });
+
 
         String sectionDetails = "NA";
         ObjectMapper objectMapper = new ObjectMapper();

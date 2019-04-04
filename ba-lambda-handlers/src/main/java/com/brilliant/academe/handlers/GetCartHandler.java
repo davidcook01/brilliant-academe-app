@@ -11,6 +11,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.cart.CartInfo;
 import com.brilliant.academe.domain.cart.CourseCartRequest;
 import com.brilliant.academe.domain.cart.CourseCartResponse;
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -28,7 +29,7 @@ public class GetCartHandler implements RequestHandler<CourseCartRequest, CourseC
 
     @Override
     public CourseCartResponse handleRequest(CourseCartRequest request, Context context) {
-        this.initDynamoDbClient();
+        initDynamoDbClient();
         return execute(request);
     }
 
@@ -40,12 +41,13 @@ public class GetCartHandler implements RequestHandler<CourseCartRequest, CourseC
     }
 
     public CourseCartResponse execute(CourseCartRequest request){
+        String userId = CommonUtils.getUserFromToken(request.getToken());
         Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).getIndex("userId-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("userId = :v_user_id")
                 .withFilterExpression("cartStatus = :v_cart_status")
                 .withValueMap(new ValueMap()
-                        .withString(":v_user_id", request.getUserId())
+                        .withString(":v_user_id", userId)
                         .withString(":v_cart_status", STATUS_SAVE));
 
         ItemCollection<QueryOutcome> userCourseCartItems = index.query(querySpec);

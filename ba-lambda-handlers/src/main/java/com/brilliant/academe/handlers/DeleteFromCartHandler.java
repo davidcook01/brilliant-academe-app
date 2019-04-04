@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.cart.CourseCartRequest;
 import com.brilliant.academe.domain.cart.CourseCartResponse;
+import com.brilliant.academe.util.CommonUtils;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -16,7 +17,7 @@ public class DeleteFromCartHandler implements RequestHandler<CourseCartRequest, 
 
     @Override
     public CourseCartResponse handleRequest(CourseCartRequest request, Context context) {
-        this.initDynamoDbClient();
+        initDynamoDbClient();
         return execute(request);
     }
 
@@ -28,7 +29,8 @@ public class DeleteFromCartHandler implements RequestHandler<CourseCartRequest, 
     }
 
     public CourseCartResponse execute(CourseCartRequest request){
-        dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).deleteItem("userId", request.getUserId(),
+        String userId = CommonUtils.getUserFromToken(request.getToken());
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).deleteItem("userId", userId,
                                                                 "courseId", request.getCourseId());
         CourseCartResponse response = new CourseCartResponse();
         response.setMessage(STATUS_SUCCESS);
