@@ -8,7 +8,7 @@ import { VideoComponent } from './student/video/video.component';
 
 const routes: Routes = [
   {
-    path: 'home',
+    path: '',
     component: HomeComponent
   },
   {
@@ -16,12 +16,11 @@ const routes: Routes = [
     component: CreateCourseInfoComponent
   },
   {
-    path: 'courses',
+    path: 'api/courses',
     component: EnrolledCoursesComponent
   },
   {
-    // path: 'video/:courseId',
-    path: 'video',
+    path: 'api/courses/video/:courseId',
     component: VideoComponent
   }
 ];

@@ -1,10 +1,10 @@
-<div class="container-fluid"> 
+<div class="container-fluid">
   <!-- Modal -->
   <div class="modal fade" id="signin" role="dialog">
-    <div class="modal-dialog"> 
-      
+    <div class="modal-dialog">
+
       <!-- Modal content-->
-      
+
       <div class="row text-center">
         <div class="container modal-content signin_social" id="signin_popup ">
           <div class="row">
@@ -27,8 +27,8 @@
                 </div>
                 <div class="form-group">
                   <input type="password" class="form-control" formControlName="password" placeholder="Password" >
-                </div> 
-               
+                </div>
+
                 <div *ngIf="errorMsgLogin" class="error-msg">
                   {{errorMsgLogin}}
                 </div>
@@ -45,13 +45,13 @@
     </div>
   </div>
 </div>
-<div class="container-fluid"> 
+<div class="container-fluid">
   <!-- Modal -->
   <div class="modal fade" id="signup" role="dialog">
-    <div class="modal-dialog"> 
-      
+    <div class="modal-dialog">
+
       <!-- Modal content-->
-      
+
       <div class="row">
         <div class="container modal-content signin_social" id="signin_popup ">
           <div class="row">
@@ -65,11 +65,11 @@
               <form [formGroup]="signUpForm">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h2>Create a new one here</h2>
-               
+
                 <div class="form-group">
                   <input type="email" class="form-control" formControlName="email" placeholder="Enter your Email ID">
                 </div>
-               
+
                 <div class="form-group">
                   <input type="password" class="form-control"  formControlName="password"  placeholder="Password">
                 </div>
@@ -91,7 +91,7 @@
 </div>
 
 
-<div class="container-fluid"> 
+<div class="container-fluid">
   <!-- Modal -->
   <div class="modal fade" id="confirmcode" role="dialog" >
     <div class="modal-dialog">
@@ -100,11 +100,11 @@
         <div class="container modal-content signin_social">
           <div class="row">
             <div class="col-12 order-1 right_top">
-              <form [formGroup]="confirmCodeForm">                
+              <form [formGroup]="confirmCodeForm">
                 <h2>Confirmation Code</h2>
                 <div class="form-group">
-                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
-                </div> 
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code">
+                </div>
                   <button type="submit" (click)="onConfirmSignUp()" class="signinbtn" >Submit Code</button>
 
               </form>
@@ -121,7 +121,7 @@
   </div>
 </div>
 
-<div class="container-fluid"> 
+<div class="container-fluid">
   <!-- Modal -->
   <div class="modal fade" id="confirmcode2" role="dialog" >
     <div class="modal-dialog">
@@ -130,11 +130,11 @@
         <div class="container modal-content signin_social">
           <div class="row">
             <div class="col-12 order-1 right_top">
-              <form [formGroup]="confirmCodeForm2">                
+              <form [formGroup]="confirmCodeForm2">
                 <h2>Confirmation Code</h2>
                 <div class="form-group">
-                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
-                </div> 
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code">
+                </div>
                   <button type="submit" (click)="onConfirmSignUp2()" class="signinbtn" >Submit Code</button>
 
               </form>
@@ -153,7 +153,7 @@
 
 
 
-<div class="container-fluid"> 
+<div class="container-fluid">
   <!-- Modal -->
   <div class="modal fade" id="resetpassword" role="dialog" >
     <div class="modal-dialog">
@@ -162,7 +162,7 @@
         <div class="container modal-content signin_social" id="signin_popup ">
           <div class="row">
             <div class="col-12 order-1 right_top">
-              <form [formGroup]="resetpassword">                
+              <form [formGroup]="resetpassword">
                 <h2>Confirmation Code</h2>
                 <div class="form-group">
                   <input type="email" class="form-control" required formControlName="email"  placeholder="Enter your Email ID">
@@ -173,12 +173,12 @@
                 </div>
                 <div class="form-group">
                   <input type="password" class="form-control" formControlName="password" placeholder="Password" >
-                </div> 
-               
+                </div>
+
                 <div class="form-group">
-                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code"> 
-                </div> 
-                        
+                  <input type="text" class="form-control" required formControlName="code"  placeholder="Enter the confirmation code">
+                </div>
+
                 <div *ngIf="errorMsg" class="error-msg">
                   {{errorMsg}}
                 </div>
@@ -193,8 +193,8 @@
     </div>
   </div>
 </div>
-      
-     
+
+
 
 
 
@@ -237,12 +237,12 @@
           </nav>
         </div>
         <div class="float-right">
-          
-			<i class="glyph-icon flaticon-magnifying-glass padd_lft_15 sm_div pull-right" data-toggle="collapse" data-target="#filter-panel"></i> 
+
+			<i class="glyph-icon flaticon-magnifying-glass padd_lft_15 sm_div pull-right" data-toggle="collapse" data-target="#filter-panel"></i>
 		<a href="shopping_cart.html"><i class="glyph-icon flaticon-shopping-bag padd_lft_15 sm_div1 pull-right"><span>4</span> </i></a>
 		   <a class="border_outer nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">AR </a>
-          <div class="dropdown-menu  dropdown-menu-right " aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#">My Notifications</a> <a class="dropdown-item" href="inner.html"> My Messages</a> <a class="dropdown-item" href="#"> My Courses</a> <a class="dropdown-item" href="#">Instructor Dashboard</a> </div>
-				
+          <div class="dropdown-menu  dropdown-menu-right " aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="#">My Notifications</a> <a class="dropdown-item" href="inner.html"> My Messages</a> <a class="dropdown-item" href="/api/courses"> My Courses</a> <a class="dropdown-item" href="#">Instructor Dashboard</a> </div>
+
 		  </div>
       </div>
     </div>
@@ -279,7 +279,7 @@
     </div>
   </div>
 </header>
-<!--Header end--> 
+<!--Header end-->
 
 <!--Router Outlet for component rendering start-->
 <router-outlet></router-outlet>
@@ -324,7 +324,7 @@
   </div>
 </section>
 
-<!--Featured end--> 
+<!--Featured end-->
 
 <!--foote open-->
 <section class="footer_main mrg_top">
@@ -362,7 +362,7 @@
     </div>
     <div class="col-6 col-sm-6 col-md-4 contact_bg">
       <p> Many desktop publishing packages and web page editors now use Lorem Ipsum as web sites still in their infancy.
-        
+
         Various versions have evolved over the years, sometimes by accident, sometimes </p>
       <div class="row margin_btm3">
         <div class="col-12  col-sm-12  topnav">

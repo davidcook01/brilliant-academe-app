@@ -30,7 +30,7 @@ export class VideoComponent implements OnInit {
     const proxyurl = 'https://cors-anywhere.herokuapp.com/';
     const url = 'https://z2b3utn8c2.execute-api.us-east-1.amazonaws.com/ba-api/course/';
     try {
-      return await axios.get(proxyurl + url + 'efe3fe7b-cc80-400b-9080-b03e8b43e7b6' + '/lecture');
+      return await axios.get(proxyurl + url + this.courseId + '/lecture');
     } catch (error) {
       console.error(error);
     }

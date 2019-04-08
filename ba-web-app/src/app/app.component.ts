@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoggerService } from './services/logger.service';
 import {AuthService} from './services/auth-service';
 import { HttpClient } from '@angular/common/http';
+import { CookieService } from 'ngx-cookie-service';
 import * as $ from 'jquery';
 
 @Component({
@@ -29,7 +30,8 @@ export class AppComponent implements OnInit {
     private router: Router,
     private auth: AuthService,
     private logger: LoggerService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cookieService: CookieService
   ) { }
 
   ngOnInit() {
@@ -42,48 +44,48 @@ export class AppComponent implements OnInit {
       next = $(this).siblings(':first');
       }
       next.children(':first-child').clone().appendTo($(this));
-      
+
       for (var i=0;i<5;i++) {
           next=next.next();
           if (!next.length) {
             next = $(this).siblings(':first');
           }
-          
+
           next.children(':first-child').clone().appendTo($(this));
         }
   });
   }
 
    ForgetPassword(){
-  
+
     eval("$('#signin').modal('hide')") ;
       var person = prompt("Please enter your emailID");
       this.auth.forgotPassword(person)
       .subscribe(
               result => {
-                 
+
                   console.log("succesfully done")
-                  eval("$('#resetpassword').modal('show')") ;          
+                  eval("$('#resetpassword').modal('show')") ;
                   this.router.navigate(['/']);
                 },
                 error => {
                     this.errorMsg = error.message;
-                  
-                });    
-    
-       
+
+                });
+
+
    }
    initForm() {
     this.loginForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', Validators.required)
     });
-      
+
     this.signUpForm =  new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', Validators.required)
     });
-      
+
     this.confirmCodeForm = new FormGroup({
       code: new FormControl('', [Validators.required])
     });
@@ -92,7 +94,7 @@ export class AppComponent implements OnInit {
       code: new FormControl('', [Validators.required])
     });
 
-   
+
 
     this.resetpassword = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
@@ -100,8 +102,8 @@ export class AppComponent implements OnInit {
       code: new FormControl('', [Validators.required])
     });
   }
- 
-      
+
+
   onSignUp() {
       const email = this.signUpForm.value.email, password = this.signUpForm.value.password;
       this.auth.signUp(email, password).subscribe(
@@ -109,20 +111,20 @@ export class AppComponent implements OnInit {
           this.logger.log("SignUp retured result:" + result);
           eval("$('#signup').modal('hide')") ;
           this.errorMsg = "";
-          eval("$('#confirmcode').modal('show')") ;          
+          eval("$('#confirmcode').modal('show')") ;
           this.router.navigate(['/']);
         },
         error => {
           this.logger.log(error);
           this.errorMsgSignup = error.message;
           eval("$('#signup').modal('show')") ;
-         
+
         });
     }
-   
-   
-   onConfirmSignUp(){   
-      
+
+
+   onConfirmSignUp(){
+
        console.log(this.signUpForm.value.email);
        console.log(this.confirmCodeForm.value.code);
        this.auth.confirmSignUp(this.signUpForm.value.email, this.confirmCodeForm.value.code)
@@ -135,12 +137,12 @@ export class AppComponent implements OnInit {
                  error => {
                      this.errorMsgConfirmSignUp = error.message;
                      eval("$('#confirmcode').modal('show')") ;
-                     console.log(error.message);                   
-                 });       
+                     console.log(error.message);
+                 });
    }
 
-   onConfirmSignUp2(){   
-   
+   onConfirmSignUp2(){
+
     this.auth.confirmSignUp(this.loginForm.value.email, this.confirmCodeForm2.value.code )
     .subscribe(
             result => {
@@ -152,36 +154,36 @@ export class AppComponent implements OnInit {
               error => {
                   this.errorMsgConfirmSignUp = error.message;
                   eval("$('#confirmcode2').modal('show')") ;
-                  console.log(error.message);                   
-              });       
+                  console.log(error.message);
+              });
 }
-   
-  
-    
+
+
+
 
 
 
    onsubmitforgotPassword(){
-    
+
     console.log("serive forgot password is called")
     console.log( "code is:  " + this.resetpassword.value.code)
     this.auth.onsubmitforgotPassword(this.resetpassword.value.email,this.resetpassword.value.code, this.resetpassword.value.password )
     .subscribe(
             result => {
-                
+
                 eval("$('#resetpassword').modal('hide')") ;
                 this.errorMsg = "";
               },
               error => {
                   this.errorMsg = error.message;
-               
-                
-              });    
+
+
+              });
    }
-      
+
   onSubmitLogin() {
     const email = this.loginForm.value.email, password = this.loginForm.value.password;
-   
+
    //console.log(this.loginForm.value);
     // this.logger.log("email:" + email);
     // this.logger.log("password:" + password);
@@ -190,9 +192,11 @@ export class AppComponent implements OnInit {
         result => {
           var userId = result.username ;
           console.log(userId);
+          const sessionToken = result.signInUserSession.accessToken.jwtToken;
+          this.cookieService.set('SESSIONID', sessionToken, 1, '/api', '', true);
           eval("$('#signin').modal('hide')") ;
           alert("signIn success...");
-          this.router.navigate(['/myhome']);
+          this.router.navigate(['/api/courses']);
         },
         error => {
           this.logger.log(error);
@@ -201,20 +205,20 @@ export class AppComponent implements OnInit {
             eval("$('#signin').modal('hide')") ;
             this.auth.resendSignUp(email).subscribe(
                   result => {
-                    
+
                   },
                   error =>{
                     this.errorMsgConfirmSignUp = error.message;
                   }
 
             );
-            eval("$('#confirmcode2').modal('show')") ; 
+            eval("$('#confirmcode2').modal('show')") ;
             this.errorMsgConfirmSignUp = "CODE HAS BEEN SEND TO YOUR EMAIL ID"
-            
+
 
           }
           this.errorMsgLogin = error.message;
-         
+
         });
   }
 
@@ -234,13 +238,13 @@ export class AppComponent implements OnInit {
     //  };
 
   //   return this.auth.federatedSignIn(
-  //     // Initiate federated sign-in with Google identity provider 
+  //     // Initiate federated sign-in with Google identity provider
   //      'google',
-  //       { 
+  //       {
   //           // the JWT token
-  //            token: id_token, 
+  //            token: id_token,
   //            // the expiration time
-  //          expires_at 
+  //          expires_at
   //        },
   //       // a user object
   //        user

@@ -5,8 +5,8 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthService } from './services/auth-service';
 import { LoggerService } from './services/logger.service';
-import { TrainingService} from './services/training.service'
-import { AuthGuardService} from './services/auth-guard.service'
+import { TrainingService} from './services/training.service';
+import { AuthGuardService} from './services/auth-guard.service';
 import {HttpClientModule} from '@angular/common/http';
 import { CreateCourseInfoComponent } from './instructor/create-course-info/create-course-info.component';
 import { EnrolledCoursesComponent } from './student/enrolled-courses/enrolled-courses.component';
@@ -17,6 +17,7 @@ import { VgControlsModule } from 'videogular2/controls';
 import { VgBufferingModule } from 'videogular2/buffering';
 import { VgOverlayPlayModule } from 'videogular2/overlay-play';
 import { VgStreamingModule } from 'videogular2/streaming';
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,7 @@ import { VgStreamingModule } from 'videogular2/streaming';
     VgOverlayPlayModule,
     VgStreamingModule
   ],
-  providers: [ AuthService, AuthGuardService, LoggerService, TrainingService ],
+  providers: [ AuthService, AuthGuardService, LoggerService, TrainingService, CookieService ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

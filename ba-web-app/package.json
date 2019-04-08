@@ -31,6 +31,7 @@
     "eslint": "^5.15.3",
     "jquery": "^3.3.1",
     "jquery.easing": "^1.4.1",
+    "ngx-cookie-service": "^2.1.0",
     "npm": "^6.2.0",
     "rxjs": "^6.3.0",
     "videogular2": "^6.4.0",

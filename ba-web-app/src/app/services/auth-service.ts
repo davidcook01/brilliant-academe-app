@@ -46,7 +46,7 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
     console.log("auth service got called" + email +"  " +  code);
     return from(Auth.confirmSignUp(email, code, {
       // Optional. Force user confirmation irrespective of existing alias. By default set to True.
-      forceAliasCreation: true    
+      forceAliasCreation: true
   }).then(data => console.log(data))
     .catch(err => console.log(err))
   );
@@ -64,7 +64,7 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
         tap(() => {
           this.loggedIn.next(true);
           return true;
-          
+
           })
       );
   }
@@ -74,7 +74,7 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
     return from(Auth.currentAuthenticatedUser())
       .pipe(
         map(()=> {
-          
+
           this.loggedIn.next(true);
           return true;
         }),
