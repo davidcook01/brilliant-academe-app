@@ -7,6 +7,7 @@ import { map, tap, catchError } from 'rxjs/operators';
 //import { of } from 'rxjs/observable/of';
 import Amplify, { Auth } from 'aws-amplify';
 import { environment } from '../../environments/environment';
+import { CookieService } from 'ngx-cookie-service';
 import { AuthenticationDetails, CognitoUser, CognitoUserSession } from "amazon-cognito-identity-js";
 import * as AWS from 'aws-sdk';
 @Injectable()
@@ -14,7 +15,7 @@ export class AuthService {
 
 public loggedIn: BehaviorSubject<boolean>;
 
-constructor(private router: Router) {
+constructor(private router: Router, private cookieService: CookieService) {
     Amplify.configure(environment.amplify);
     this.loggedIn = new BehaviorSubject<boolean>(false);
 }
@@ -43,7 +44,7 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
 
   /** confirm code */
   public confirmSignUp(email, code): Observable<any> {
-    console.log("auth service got called" + email +"  " +  code);
+    console.log("auth service got called" + email + "  " +  code);
     return from(Auth.confirmSignUp(email, code, {
       // Optional. Force user confirmation irrespective of existing alias. By default set to True.
       forceAliasCreation: true
@@ -74,7 +75,6 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
     return from(Auth.currentAuthenticatedUser())
       .pipe(
         map(()=> {
-
           this.loggedIn.next(true);
           return true;
         }),
@@ -83,6 +83,10 @@ public onsubmitforgotPassword(email,code,new_password):Observable<any>{
           return of(false);
         })
       );
+  }
+
+  public getToken(): string {
+    return this.cookieService.get('SESSIONID');
   }
 
   /** signout */

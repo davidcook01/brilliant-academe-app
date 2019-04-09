@@ -18,6 +18,8 @@ import { VgBufferingModule } from 'videogular2/buffering';
 import { VgOverlayPlayModule } from 'videogular2/overlay-play';
 import { VgStreamingModule } from 'videogular2/streaming';
 import { CookieService } from 'ngx-cookie-service';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TokenInterceptor } from './services/token.interceptor';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,11 @@ import { CookieService } from 'ngx-cookie-service';
     VgOverlayPlayModule,
     VgStreamingModule
   ],
-  providers: [ AuthService, AuthGuardService, LoggerService, TrainingService, CookieService ],
+  providers: [ AuthService, AuthGuardService, LoggerService, TrainingService, CookieService, {
+    provide: HTTP_INTERCEPTORS,
+    useClass: TokenInterceptor,
+    multi: true
+  } ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

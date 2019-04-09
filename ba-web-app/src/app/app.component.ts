@@ -16,12 +16,12 @@ export class AppComponent implements OnInit {
   loginForm: FormGroup;
   signUpForm: FormGroup;
   confirmCodeForm: FormGroup;
-  resetpassword : FormGroup;
+  resetpassword: FormGroup;
   confirmCodeForm2: FormGroup;
   errorMsgLogin: string;
-  errorMsgSignup : string ;
+  errorMsgSignup: string;
   errorMsgConfirmSignUp: string;
-  errorMsg : string ;
+  errorMsg: string;
 
 
 
@@ -192,8 +192,9 @@ export class AppComponent implements OnInit {
         result => {
           var userId = result.username ;
           console.log(userId);
-          const sessionToken = result.signInUserSession.accessToken.jwtToken;
-          this.cookieService.set('SESSIONID', sessionToken, 1, '/api', '', true);
+          const sessionToken = result.signInUserSession.idToken.jwtToken;
+          this.cookieService.set('SESSIONID', sessionToken, 0.41, '/api', '', true);
+          console.log(result);
           eval("$('#signin').modal('hide')") ;
           alert("signIn success...");
           this.router.navigate(['/api/courses']);

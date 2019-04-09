@@ -22,52 +22,40 @@ export class EnrolledCoursesComponent implements OnInit {
 
   public courses: Course[];
 
-  constructor(private router: Router, private http: HttpClient) {
+  constructor(private router: Router, public http: HttpClient) {
     this.courses = [];
   }
 
   public async loadCourseVideos(courseId: String) {
     console.log(courseId);
-    const url = '/video/' + courseId;
+    const url = '/api/courses/video/' + courseId;
     this.router.navigateByUrl(url);
   }
 
   public async getCourses() {
     try {
-      return await axios.get(
-        'https://cors-anywhere.herokuapp.com/https://hvgo3a7lrc.execute-api.us-east-1.amazonaws.com/ba-api/enrollment'
-        // {
-        //   headers:  { 'Authorization': `Bearer <my token>` }
-        // }
+      await this.http.get('https://cors-anywhere.herokuapp.com/https://hvgo3a7lrc.execute-api.us-east-1.amazonaws.com/ba-api/enrollment')
+      .subscribe(
+        data => this.courses.push(data.courses),
+        err => console.log(err)
       );
+      console.log(this.courses);
     } catch (error) {
       console.error(error)
     }
   }
-  public async showCourses() {
-  //   let header = new HttpHeaders();
-  // header = header.append('Access-Control-Expose-Headers', 'Accept, application/x-www-form-urlencoded');
-  // console.log(header.get('Accept'));
-    const courses = await this.getCourses();
-    if (courses) {
-      this.courses.push(courses.data.courses);
-      console.log(this.courses);
+  // public async showCourses() {
+  //   const courses = await this.getCourses();
+  //   if (courses) {
+  //     this.courses.push(courses.data.courses);
+  //     console.log(this.courses);
 
-    }
-  }
+  //   }
+  // }
 
   ngOnInit() {
-    this.showCourses();
-  //   this.http.get<any>('/courses', {observe: 'response'})
-  // .subscribe(resp => {
-  //   console.log(resp.headers.get('X-Token'));
-  // });
-  // this.http.get('/courses', {observe: 'response'})
-  //   .subscribe(resp => console.log(resp.headers))
+    this.getCourses();
 
-    // const myHeaders = new Headers();
-    // const acceptHeader =  myHeaders.get('Cache-Control');
-    // console.log(acceptHeader);
   }
 
 
