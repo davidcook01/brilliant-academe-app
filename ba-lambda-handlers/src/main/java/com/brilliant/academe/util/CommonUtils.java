@@ -27,6 +27,11 @@ public class CommonUtils {
         return userId;
     }
 
+    public void ab(){
+        String ab;
+        System.out.println("AB");
+    }
+
     public static String generateSignedUrl(Integer expirySeconds, String cloudFrontDistributionName,
                                            String s3ObjectKey, String cloudFrontKeyPairId){
         File cloudFrontPrivateKeyFile = null;

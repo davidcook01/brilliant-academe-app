@@ -20,9 +20,6 @@ public class UpdateCourseRatingHandler implements RequestHandler<UpdateCourseRat
 
     @Override
     public UpdateCourseRatingResponse handleRequest(UpdateCourseRatingRequest updateCourseRatingRequest, Context context) {
-        System.out.println(updateCourseRatingRequest.getToken());
-        System.out.println(updateCourseRatingRequest.getBody().getCourseRating());
-        System.out.println(updateCourseRatingRequest.getCourseId());
         initDynamoDbClient();
         return execute(updateCourseRatingRequest);
     }
