@@ -12,6 +12,7 @@ import * as $ from 'jquery';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent implements OnInit {
   loginForm: FormGroup;
   signUpForm: FormGroup;
@@ -22,8 +23,6 @@ export class AppComponent implements OnInit {
   errorMsgSignup: string;
   errorMsgConfirmSignUp: string;
   errorMsg: string;
-
-
 
   constructor(
     private fb: FormBuilder,
@@ -37,45 +36,43 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.initForm();
     /* University Logo repeat at the bottom of the page */
-    $('.carousel .carousel-item').each(function(){
+    $('.carousel .carousel-item').each(function() {
       console.log('Cloning the carousel item');
-      var next = $(this).next();
+
+      let next = $(this).next();
       if (!next.length) {
-      next = $(this).siblings(':first');
+        next = $(this).siblings(':first');
       }
+
       next.children(':first-child').clone().appendTo($(this));
 
-      for (var i=0;i<5;i++) {
-          next=next.next();
-          if (!next.length) {
-            next = $(this).siblings(':first');
-          }
-
-          next.children(':first-child').clone().appendTo($(this));
+      for (let i = 0; i < 5; i++) {
+        next = next.next();
+        if (!next.length) {
+          next = $(this).siblings(':first');
         }
-  });
+        next.children(':first-child').clone().appendTo($(this));
+      }
+    });
   }
 
-   ForgetPassword(){
+  ForgetPassword() {
+    eval('$(\'#signin\').modal(\'hide\')');
+    const person = prompt('Please enter your email ID');
 
-    eval("$('#signin').modal('hide')") ;
-      var person = prompt("Please enter your emailID");
-      this.auth.forgotPassword(person)
-      .subscribe(
-              result => {
+    this.auth.forgotPassword(person)
+      .subscribe(result => {
+          console.log('Succesfully done');
+          eval('$(\'#resetpassword\').modal(\'show\')');
+            this.router.navigate(['/']);
+          },
+          error => {
+            this.errorMsg = error.message;
+          }
+      );
+  }
 
-                  console.log("succesfully done")
-                  eval("$('#resetpassword').modal('show')") ;
-                  this.router.navigate(['/']);
-                },
-                error => {
-                    this.errorMsg = error.message;
-
-                });
-
-
-   }
-   initForm() {
+  initForm() {
     this.loginForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', Validators.required)
@@ -94,8 +91,6 @@ export class AppComponent implements OnInit {
       code: new FormControl('', [Validators.required])
     });
 
-
-
     this.resetpassword = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', Validators.required),
@@ -103,129 +98,102 @@ export class AppComponent implements OnInit {
     });
   }
 
-
   onSignUp() {
-      const email = this.signUpForm.value.email, password = this.signUpForm.value.password;
-      this.auth.signUp(email, password).subscribe(
-      result => {
-          this.logger.log("SignUp retured result:" + result);
-          eval("$('#signup').modal('hide')") ;
-          this.errorMsg = "";
-          eval("$('#confirmcode').modal('show')") ;
-          this.router.navigate(['/']);
-        },
-        error => {
-          this.logger.log(error);
-          this.errorMsgSignup = error.message;
-          eval("$('#signup').modal('show')") ;
+    const email = this.signUpForm.value.email, password = this.signUpForm.value.password;
+    this.auth.signUp(email, password).subscribe(result => {
+      this.logger.log('SignUp retured result:' + result);
+      eval('$(\'#signup\').modal(\'hide\')') ;
+      this.errorMsg = "";
+      eval('$(\'#confirmcode\').modal(\'show\')') ;
+      this.router.navigate(['/']);
+    },
+    error => {
+      this.logger.log(error);
+      this.errorMsgSignup = error.message;
+      eval('$(\'#signup\').modal(\'show\')') ;
+    });
+  }
 
-        });
-    }
+  onConfirmSignUp() {
+    console.log(this.signUpForm.value.email);
+    console.log(this.confirmCodeForm.value.code);
+    this.auth.confirmSignUp(this.signUpForm.value.email, this.confirmCodeForm.value.code)
+      .subscribe(result => {
+        eval('$(\'#confirmcode\').modal(\'hide\')');
+        this.errorMsg = ' ';
+        console.log(this.errorMsg + 'no error');
+      },
+      error => {
+        this.errorMsgConfirmSignUp = error.message;
+        eval('$(\'#confirmcode\').modal(\'show\')') ;
+        console.log(error.message);
+      });
+  }
 
+  onConfirmSignUp2() {
+    this.auth.confirmSignUp(this.loginForm.value.email, this.confirmCodeForm2.value.code)
+      .subscribe(result => {
+        eval('$(\'#confirmcode2\').modal(\'hide\')');
+        this.errorMsg = '';
+        console.log(this.errorMsg + 'no error');
+        console.log(result);
+      },
+      error => {
+        this.errorMsgConfirmSignUp = error.message;
+        eval('$(\'#confirmcode2\').modal(\'show\')');
+        console.log(error.message);
+      });
+  }
 
-   onConfirmSignUp(){
-
-       console.log(this.signUpForm.value.email);
-       console.log(this.confirmCodeForm.value.code);
-       this.auth.confirmSignUp(this.signUpForm.value.email, this.confirmCodeForm.value.code)
-       .subscribe(
-               result => {
-                   eval("$('#confirmcode').modal('hide')") ;
-                   this.errorMsg = "";
-                   console.log(this.errorMsg + "no error");
-                 },
-                 error => {
-                     this.errorMsgConfirmSignUp = error.message;
-                     eval("$('#confirmcode').modal('show')") ;
-                     console.log(error.message);
-                 });
-   }
-
-   onConfirmSignUp2(){
-
-    this.auth.confirmSignUp(this.loginForm.value.email, this.confirmCodeForm2.value.code )
-    .subscribe(
-            result => {
-                eval("$('#confirmcode2').modal('hide')") ;
-                this.errorMsg = "";
-                console.log(this.errorMsg + "no error");
-                console.log(result);
-              },
-              error => {
-                  this.errorMsgConfirmSignUp = error.message;
-                  eval("$('#confirmcode2').modal('show')") ;
-                  console.log(error.message);
-              });
-}
-
-
-
-
-
-
-   onsubmitforgotPassword(){
-
-    console.log("serive forgot password is called")
-    console.log( "code is:  " + this.resetpassword.value.code)
-    this.auth.onsubmitforgotPassword(this.resetpassword.value.email,this.resetpassword.value.code, this.resetpassword.value.password )
-    .subscribe(
-            result => {
-
-                eval("$('#resetpassword').modal('hide')") ;
-                this.errorMsg = "";
-              },
-              error => {
-                  this.errorMsg = error.message;
-
-
-              });
-   }
+  onsubmitforgotPassword(){
+    console.log('serive forgot password is called');
+    console.log('code is: ' + this.resetpassword.value.code);
+    this.auth.onsubmitforgotPassword(this.resetpassword.value.email, this.resetpassword.value.code, this.resetpassword.value.password)
+      .subscribe(result => {
+        eval('$(\'#resetpassword\').modal(\'hide\')') ;
+        this.errorMsg = '';
+      },
+      error => {
+        this.errorMsg = error.message;
+      });
+  }
 
   onSubmitLogin() {
     const email = this.loginForm.value.email, password = this.loginForm.value.password;
+    this.auth.signIn(email, password).subscribe(result => {
 
-   //console.log(this.loginForm.value);
-    // this.logger.log("email:" + email);
-    // this.logger.log("password:" + password);
-     this.auth.signIn(email, password)
-      .subscribe(
-        result => {
-          var userId = result.username ;
-          console.log(userId);
-          const sessionToken = result.signInUserSession.idToken.jwtToken;
-          this.cookieService.set('SESSIONID', sessionToken, 0.41, '/api', '', true);
-          console.log(result);
-          eval("$('#signin').modal('hide')") ;
-          alert("signIn success...");
-          this.router.navigate(['/api/courses']);
-        },
-        error => {
-          this.logger.log(error);
-          console.log(error);
-          if(error.name === "UserNotConfirmedException"){
-            eval("$('#signin').modal('hide')") ;
-            this.auth.resendSignUp(email).subscribe(
-                  result => {
+      const userId = result.username;
+      const sessionToken = result.signInUserSession.idToken.jwtToken;
+      this.cookieService.set('SESSIONID', sessionToken, 0.41, '/api', '', true);
+      eval('$(\'#signin\').modal(\'hide\')');
+      alert('Successfully signed in...');
+      this.router.navigate(['/api/courses']);
 
-                  },
-                  error =>{
-                    this.errorMsgConfirmSignUp = error.message;
-                  }
+    },
+      error => {
+        this.logger.log(error);
+        console.log(error);
 
-            );
-            eval("$('#confirmcode2').modal('show')") ;
-            this.errorMsgConfirmSignUp = "CODE HAS BEEN SEND TO YOUR EMAIL ID"
+        if (error.name === 'UserNotConfirmedException') {
+          eval('$(\'#signin\').modal(\'hide\')');
+          this.auth.resendSignUp(email).subscribe(
+            result => { },
+            unconfirmeError => {
+              this.errorMsgConfirmSignUp = unconfirmeError.message;
+            }
+          );
+          eval('$(\'#confirmcode2\').modal(\'show\')');
+          this.errorMsgConfirmSignUp = 'CODE HAS BEEN SEND TO YOUR EMAIL ID';
+        }
 
-
-          }
-          this.errorMsgLogin = error.message;
-
-        });
+        this.errorMsgLogin = error.message;
+      }
+    );
   }
 
-  google(){
-    console.log("google");
-    let url = "https://brilliant-academe.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=6her35acoifrnmia95q8sjvovl&redirect_uri=https://www.amazon.com";
+  google() {
+    console.log('google');
+    let url = 'https://brilliant-academe.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=6her35acoifrnmia95q8sjvovl&redirect_uri=https://www.amazon.com';
     let result = this.http.get(url);
     window.location.replace(url);
     console.log(result);
