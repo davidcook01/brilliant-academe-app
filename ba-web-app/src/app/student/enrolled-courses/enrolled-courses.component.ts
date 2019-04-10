@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import axios from 'axios';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface Course {
   courseDescription: string;
@@ -44,20 +43,8 @@ export class EnrolledCoursesComponent implements OnInit {
       console.error(error)
     }
   }
-  // public async showCourses() {
-  //   const courses = await this.getCourses();
-  //   if (courses) {
-  //     this.courses.push(courses.data.courses);
-  //     console.log(this.courses);
-
-  //   }
-  // }
 
   ngOnInit() {
     this.getCourses();
-
   }
-
-
-
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl} from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoggerService } from './services/logger.service';
