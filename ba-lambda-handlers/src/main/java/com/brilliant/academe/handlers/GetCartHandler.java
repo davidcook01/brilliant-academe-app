@@ -59,7 +59,7 @@ public class GetCartHandler implements RequestHandler<CourseCartRequest, CourseC
         List<CartInfo> cartInfos = new ArrayList<>();
 
         String[] attributes = {"id", "courseName", "coverImage",
-                "discountedPrice", "instructorId", "instructorName", "price"};
+                "discountedPrice", "instructorId", "instructorName", "price", "skuId"};
 
         List<String> attributedToGet = Arrays.asList(attributes);
 

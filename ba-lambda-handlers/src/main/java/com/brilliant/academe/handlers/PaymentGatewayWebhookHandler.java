@@ -1,0 +1,143 @@
+package com.brilliant.academe.handlers;
+
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.domain.checkout.StripeCheckoutEvent;
+import com.brilliant.academe.domain.checkout.StripeCheckoutResponse;
+import com.brilliant.academe.domain.payment.PaymentGatewayWebhookRequest;
+import com.google.gson.Gson;
+import com.stripe.model.Event;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import static com.brilliant.academe.constant.Constant.*;
+
+public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatewayWebhookRequest, Void> {
+
+    private DynamoDB dynamoDB;
+
+    @Override
+    public Void handleRequest(PaymentGatewayWebhookRequest request, Context context)  {
+        initDynamoDbClient();
+        String stripeJson = new Gson().toJson(request.getEventJson());
+        return execute(stripeJson);
+    }
+
+    private void initDynamoDbClient() {
+        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+                .withRegion(REGION)
+                .build();
+        dynamoDB = new DynamoDB(client);
+    }
+
+    public Void execute(String stripeJson){
+        Event event = Event.GSON.fromJson(stripeJson, Event.class);
+        if(event.getType().equals("checkout.session.completed")){
+            StripeCheckoutResponse response = new Gson().fromJson(event.getData().toJson(), StripeCheckoutResponse.class);
+            StripeCheckoutEvent checkoutEvent = response.getObject();
+            System.out.println("***"+new Gson().toJson(checkoutEvent));
+            String userId = checkoutEvent.getClient_reference_id();//CommonUtils.getUserFromToken(checkoutEvent.getClient_reference_id());
+            List<String> skuIds = new ArrayList<>();
+            checkoutEvent.getDisplay_items().forEach(s->skuIds.add(s.getSku().getId()));
+            List<String> courses = getCourses(skuIds);
+            String orderId = UUID.randomUUID().toString();
+            String transactionId = event.getId();
+            updateOrderDetails(checkoutEvent, orderId, transactionId, userId);
+            updateCart(userId, courses, orderId, transactionId);
+            enrollCourses(courses, userId);
+        }
+        return null;
+    }
+
+    private List<String> getCourses(List<String> skuIds){
+        List<String> courses = new ArrayList<>();
+        for(String skuId: skuIds) {
+            Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getIndex("skuId-index");
+            QuerySpec querySpec = new QuerySpec()
+                    .withKeyConditionExpression("skuId = :v_sku_id")
+                    .withValueMap(new ValueMap()
+                            .withString(":v_sku_id", skuId));
+
+            ItemCollection<QueryOutcome> courseInfo = index.query(querySpec);
+            for (Item item : courseInfo) {
+                courses.add((String) item.get("id"));
+            }
+        }
+        return courses;
+    }
+
+
+    private void updateCart(String userId, List<String> courses, String orderId, String transactionId){
+        Table table = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART);
+        ItemCollection<QueryOutcome> items = table.getIndex("userId-index").query(new QuerySpec()
+                .withKeyConditionExpression("userId = :v_user_id")
+                .withFilterExpression("cartStatus = :v_cart_status")
+                .withValueMap(new ValueMap().withString(":v_user_id", userId)
+                        .withString(":v_cart_status", STATUS_SAVE)));
+
+        String cartStatus = STATUS_SUCCESS;
+
+        for(String courseId: courses){
+            for(Item item: items){
+                String cartCourseId = (String) item.get("courseId");
+                if(courseId.equals(cartCourseId)){
+                    UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                            .withPrimaryKey("userId", userId,
+                                    "courseId", courseId)
+                            .withUpdateExpression("set #s = :cartStatus, " +
+                                    "#o = :orderId, " +
+                                    "#t = :transactionId")
+                            .withNameMap(new NameMap()
+                                    .with("#s", "cartStatus")
+                                    .with("#o", "orderId")
+                                    .with("#t", "transactionId"))
+                            .withValueMap(new ValueMap()
+                                    .withString(":cartStatus", cartStatus)
+                                    .withString(":orderId", orderId)
+                                    .withString(":transactionId", transactionId));
+                    table.updateItem(updateItemSpec);
+                }
+            }
+        }
+    }
+
+
+    private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String transactionId, String userId){
+        String orderDetailsJson = "NA";
+        if(Objects.nonNull(checkoutEvent))
+            orderDetailsJson = new Gson().toJson(checkoutEvent);
+
+        String orderStatus = STATUS_SUCCESS;
+
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER).putItem(new PutItemSpec().withItem(new Item()
+                .withString("id", orderId)
+                .withString("transactionId", transactionId)
+                .withString("orderStatus", orderStatus)
+                .withString("userId", userId)
+                .withString("orderDetails", orderDetailsJson)));
+    }
+
+
+    private void enrollCourses(List<String> courses, String userId){
+        for(String courseId: courses){
+            PutItemSpec putItemSpec = new PutItemSpec();
+            putItemSpec.withItem(new Item()
+                    .withString("userId", userId)
+                    .withString("courseId", courseId)
+                    .withNumber("percentageCompleted", 0));
+            dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).putItem(putItemSpec);
+        }
+    }
+
+}

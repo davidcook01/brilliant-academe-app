@@ -26,6 +26,8 @@ public class CartInfo implements Serializable {
     @JsonProperty("discountedPrice")
     private BigDecimal discountedCoursePrice;
 
+    private String skuId;
+
     public String getCourseId() {
         return courseId;
     }
@@ -80,5 +82,13 @@ public class CartInfo implements Serializable {
 
     public void setDiscountedCoursePrice(BigDecimal discountedCoursePrice) {
         this.discountedCoursePrice = discountedCoursePrice;
+    }
+
+    public String getSkuId() {
+        return skuId;
+    }
+
+    public void setSkuId(String skuId) {
+        this.skuId = skuId;
     }
 }
