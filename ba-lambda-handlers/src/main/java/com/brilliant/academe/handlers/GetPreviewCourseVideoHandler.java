@@ -42,13 +42,12 @@ public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCours
     public PreviewCourseVideoResponse execute(PreviewCourseVideoRequest previewCourseVideoRequest){
         PreviewCourseVideoResponse previewCourseVideoResponse = new PreviewCourseVideoResponse();
         String lectureLink = getLectureLink(previewCourseVideoRequest.getCourseId(), previewCourseVideoRequest.getLectureId());
-        previewCourseVideoResponse.setSignedUrl("");
         if(Objects.nonNull(lectureLink)) {
-            String signedUrl = getSignedUrl(lectureLink);
+            String signedUrl = CommonUtils.getSignedUrlForObject(lectureLink, dynamoDB);
             previewCourseVideoResponse.setSignedUrl(signedUrl);
             previewCourseVideoResponse.setMessage(STATUS_SUCCESS);
         }else{
-            previewCourseVideoResponse.setMessage(VIDEO_NOT_AVAILABLE);
+            previewCourseVideoResponse.setMessage(NOT_AVAILABLE);
         }
         return previewCourseVideoResponse;
     }
@@ -77,21 +76,5 @@ public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCours
         }
 
         return null;
-    }
-
-    public String getSignedUrl(String s3ObjectKey) {
-        String[] attributes = {"cfDistributionName", "cfExpirySeconds", "cfKeyPairId", "cfPrivateKey"};
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", CONFIG_ID)
-                .withAttributesToGet(attributes);
-        Item item = dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
-        String cloudFrontDistributionName = (String) item.get("cfDistributionName");
-        BigDecimal expirySecondsInBD = (BigDecimal) item.get("cfExpirySeconds");
-        Integer expirySeconds = expirySecondsInBD.intValue();
-        String cloudFrontKeyPairId = (String) item.get("cfKeyPairId");
-        String cloudFrontPrivateKey = (String) item.get("cfPrivateKey");
-        String signedUrl = CommonUtils.generateSignedUrl(expirySeconds, cloudFrontDistributionName, s3ObjectKey, cloudFrontKeyPairId);
-        System.out.println(signedUrl);
-        return signedUrl;
     }
 }

@@ -19,7 +19,6 @@ import com.stripe.model.Event;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -47,17 +46,37 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
             StripeCheckoutResponse response = new Gson().fromJson(event.getData().toJson(), StripeCheckoutResponse.class);
             StripeCheckoutEvent checkoutEvent = response.getObject();
             System.out.println("***"+new Gson().toJson(checkoutEvent));
-            String userId = checkoutEvent.getClient_reference_id();//CommonUtils.getUserFromToken(checkoutEvent.getClient_reference_id());
-            List<String> skuIds = new ArrayList<>();
-            checkoutEvent.getDisplay_items().forEach(s->skuIds.add(s.getSku().getId()));
-            List<String> courses = getCourses(skuIds);
-            String orderId = UUID.randomUUID().toString();
-            String transactionId = event.getId();
-            updateOrderDetails(checkoutEvent, orderId, transactionId, userId);
-            updateCart(userId, courses, orderId, transactionId);
-            enrollCourses(courses, userId);
+            String orderId = checkoutEvent.getClient_reference_id();
+            String userId = getUserId(orderId);
+            if(Objects.nonNull(userId)){
+                List<String> skuIds = new ArrayList<>();
+                checkoutEvent.getDisplay_items().forEach(s->skuIds.add(s.getSku().getId()));
+                List<String> courses = getCourses(skuIds);
+                String transactionId = event.getId();
+                updateOrderDetails(checkoutEvent, orderId, userId, transactionId);
+                updateCart(userId, courses, orderId, transactionId);
+                enrollCourses(courses, userId);
+            }
         }
         return null;
+    }
+
+    private String getUserId(String orderId){
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART).getIndex("orderId-index");
+        QuerySpec querySpec = new QuerySpec()
+                .withKeyConditionExpression("orderId = :v_order_id")
+                .withFilterExpression("cartStatus = :v_cart_status")
+                .withValueMap(new ValueMap()
+                        .withString(":v_order_id", orderId)
+                        .withString(":v_cart_status", STATUS_IN_PROCESS));
+
+        ItemCollection<QueryOutcome> userCourseCartItems = index.query(querySpec);
+        String userId = null;
+        for(Item item: userCourseCartItems){
+            userId = (String) item.get("userId");
+            break;
+        }
+        return userId;
     }
 
     private List<String> getCourses(List<String> skuIds){
@@ -79,12 +98,12 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
 
 
     private void updateCart(String userId, List<String> courses, String orderId, String transactionId){
-        Table table = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART);
-        ItemCollection<QueryOutcome> items = table.getIndex("userId-index").query(new QuerySpec()
-                .withKeyConditionExpression("userId = :v_user_id")
+        Table table = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART);
+        ItemCollection<QueryOutcome> items = table.getIndex("orderId-index").query(new QuerySpec()
+                .withKeyConditionExpression("orderId = :v_order_id")
                 .withFilterExpression("cartStatus = :v_cart_status")
-                .withValueMap(new ValueMap().withString(":v_user_id", userId)
-                        .withString(":v_cart_status", STATUS_SAVE)));
+                .withValueMap(new ValueMap().withString(":v_order_id", orderId)
+                        .withString(":v_cart_status", STATUS_IN_PROCESS)));
 
         String cartStatus = STATUS_SUCCESS;
 
@@ -93,18 +112,15 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
                 String cartCourseId = (String) item.get("courseId");
                 if(courseId.equals(cartCourseId)){
                     UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                            .withPrimaryKey("userId", userId,
+                            .withPrimaryKey("orderId", orderId,
                                     "courseId", courseId)
                             .withUpdateExpression("set #s = :cartStatus, " +
-                                    "#o = :orderId, " +
                                     "#t = :transactionId")
                             .withNameMap(new NameMap()
                                     .with("#s", "cartStatus")
-                                    .with("#o", "orderId")
                                     .with("#t", "transactionId"))
                             .withValueMap(new ValueMap()
                                     .withString(":cartStatus", cartStatus)
-                                    .withString(":orderId", orderId)
                                     .withString(":transactionId", transactionId));
                     table.updateItem(updateItemSpec);
                 }
@@ -113,7 +129,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
     }
 
 
-    private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String transactionId, String userId){
+    private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String userId, String transactionId){
         String orderDetailsJson = "NA";
         if(Objects.nonNull(checkoutEvent))
             orderDetailsJson = new Gson().toJson(checkoutEvent);
@@ -123,8 +139,8 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER).putItem(new PutItemSpec().withItem(new Item()
                 .withString("id", orderId)
                 .withString("transactionId", transactionId)
-                .withString("orderStatus", orderStatus)
                 .withString("userId", userId)
+                .withString("orderStatus", orderStatus)
                 .withString("orderDetails", orderDetailsJson)));
     }
 

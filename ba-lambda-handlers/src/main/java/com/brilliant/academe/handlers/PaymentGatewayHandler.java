@@ -77,11 +77,11 @@ public class PaymentGatewayHandler implements RequestHandler<PaymentGatewayReque
         boolean isCourseCountEqual = false;
         boolean isTotalAmountEqual = false;
 
-        ItemCollection<QueryOutcome> items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).getIndex("userId-index").query(new QuerySpec()
+        ItemCollection<QueryOutcome> items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART).getIndex("userId-index").query(new QuerySpec()
                 .withKeyConditionExpression("userId = :v_user_id")
                 .withFilterExpression("cartStatus = :v_cart_status")
                 .withValueMap(new ValueMap().withString(":v_user_id", userId)
-                        .withString(":v_cart_status", STATUS_SAVE)));
+                        .withString(":v_cart_status", STATUS_IN_PROCESS)));
 
         int count = 0;
         for(String courseId: courses){
@@ -131,12 +131,12 @@ public class PaymentGatewayHandler implements RequestHandler<PaymentGatewayReque
     }
 
     private void updateCart(PaymentGatewayResponse paymentGatewayResponse, String userId, List<String> courses, String orderId){
-        Table table = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART);
+        Table table = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART);
         ItemCollection<QueryOutcome> items = table.getIndex("userId-index").query(new QuerySpec()
                                     .withKeyConditionExpression("userId = :v_user_id")
                                     .withFilterExpression("cartStatus = :v_cart_status")
                                     .withValueMap(new ValueMap().withString(":v_user_id", userId)
-                                                                .withString(":v_cart_status", STATUS_SAVE)));
+                                                                .withString(":v_cart_status", STATUS_IN_PROCESS)));
 
         String cartStatus = STATUS_FAILED;
         if(paymentGatewayResponse.isPaymentSuccess()){

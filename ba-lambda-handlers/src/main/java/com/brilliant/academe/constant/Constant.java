@@ -10,7 +10,7 @@ public class Constant {
     public static final String DYNAMODB_TABLE_NAME_USER = "ba_user";
     public static final String DYNAMODB_TABLE_NAME_COURSE = "ba_course";
     public static final String DYNAMODB_TABLE_NAME_COURSE_RESOURCE = "ba_course_resource";
-    public static final String DYNAMODB_TABLE_NAME_CART = "ba_cart";
+    public static final String DYNAMODB_TABLE_NAME_ORDER_CART = "ba_order_cart";
     public static final String DYNAMODB_TABLE_NAME_ORDER = "ba_order";
     public static final String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     public static final String DYNAMODB_TABLE_NAME_CONFIG = "ba_config";
@@ -18,13 +18,15 @@ public class Constant {
     public static final String STRIPE_SECRET_KEY = "sk_test_UTifZqEZPT8SyQBTrWCSwfAn00xySX7uI7";
     public static final String ELASTIC_TRANSCODER_PIPELINE_ID = "1551221588927-5zpuyx";
 
-    public static final String STATUS_SAVE = "SAVE";
-    public static final String STATUS_SUCCESS = "SUCCESS";
+    public static final String S3_IMAGE_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-image-upload/";
+
+    public static final String STATUS_IN_PROCESS = "INPROCESS";
+    public static final String STATUS_SUBMITTED = "SUBMITTED";
     public static final String STATUS_FAILED = "FAILED";
+    public static final String STATUS_SUCCESS = "SUCCESS";
 
     public static final String EVENT_MODIFY = "MODIFY";
-    public static final String VIDEO_NOT_AVAILABLE = "VIDEO NOT AVAILABLE";
-
+    public static final String NOT_AVAILABLE = "NOT AVAILABLE";
 
     public static final String CONFIG_ID = "1";
     public static final String LOOKUP_ID = "1";

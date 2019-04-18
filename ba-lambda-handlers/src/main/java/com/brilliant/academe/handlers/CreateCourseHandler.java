@@ -14,7 +14,15 @@ import com.brilliant.academe.domain.course.CreateCourseRequest;
 import com.brilliant.academe.domain.course.CreateCourseResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Product;
+import com.stripe.model.Sku;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -101,6 +109,12 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("courseType", createCourseRequest.getCourseType())));
         }
 
+        String skuId = "NA";
+        if(!createCourseRequest.getDiscountedCoursePrice().equals(new BigDecimal(0))) {
+            skuId = createProductAndSkuInStripe(createCourseRequest.getDiscountedCoursePrice(),
+                    createCourseRequest.getCourseName(), createCourseRequest.getCoverImage(), formattedCourseName);
+        }
+
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
                 .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", courseId)
@@ -114,6 +128,52 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("instructorName", createCourseRequest.getInstructorName())
                     .withNumber("courseDuration", createCourseRequest.getCourseDuration())
                     .withString("courseType", createCourseRequest.getCourseType())
+                    .withString("skuId", skuId)
                     .withJSON("resources", sectionDetails)));
+    }
+
+    private String createProductAndSkuInStripe(BigDecimal amount, String courseName, String coverImage, String formattedCourseName){
+        Float centAmount = amount.floatValue()*100;
+        Integer centAmountRounded = centAmount.intValue();
+        String image = S3_IMAGE_UPLOAD_FOLDER+formattedCourseName+"/"+coverImage;
+        System.out.println("Image Location:"+ image);
+        Stripe.apiKey = STRIPE_SECRET_KEY;
+
+        Map<String, Object> productParams = new HashMap<>();
+        productParams.put("name", courseName);
+        productParams.put("type", "good");
+        ArrayList attributes = new ArrayList<>();
+        attributes.add("name");
+        productParams.put("attributes", attributes);
+        Product product = null;
+        try {
+            product = Product.create(productParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Product Id:"+ product.getId());
+
+        Map<String, Object> skuParams = new HashMap<String, Object>();
+        skuParams.put("product", product.getId());
+        skuParams.put("price", centAmountRounded);
+        skuParams.put("currency", "usd");
+        Map<String, Object> attributesParams = new HashMap<String, Object>();
+        attributesParams.put("name", courseName);
+        skuParams.put("attributes", attributesParams);
+        Map<String, Object> inventoryParams = new HashMap<String, Object>();
+        inventoryParams.put("type", "infinite");
+        skuParams.put("inventory", inventoryParams);
+        skuParams.put("image", image);
+
+        System.out.println("Image Set in SKU:"+skuParams.get("image"));
+
+        Sku sku = null;
+        try {
+            sku = Sku.create(skuParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+        System.out.println("SKUID:"+ sku.getId());
+        return sku.getId();
     }
 }

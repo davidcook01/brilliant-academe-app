@@ -42,18 +42,20 @@ public class GetCartHandler implements RequestHandler<CourseCartRequest, CourseC
 
     public CourseCartResponse execute(CourseCartRequest request){
         String userId = CommonUtils.getUserFromToken(request.getToken());
-        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_CART).getIndex("userId-index");
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART).getIndex("userId-index");
         QuerySpec querySpec = new QuerySpec()
                 .withKeyConditionExpression("userId = :v_user_id")
                 .withFilterExpression("cartStatus = :v_cart_status")
                 .withValueMap(new ValueMap()
                         .withString(":v_user_id", userId)
-                        .withString(":v_cart_status", STATUS_SAVE));
+                        .withString(":v_cart_status", STATUS_IN_PROCESS));
 
         ItemCollection<QueryOutcome> userCourseCartItems = index.query(querySpec);
         List<String> addedCoursesInCart = new ArrayList();
+        String orderId = null;
         for(Item item: userCourseCartItems){
             addedCoursesInCart.add((String) item.get("courseId"));
+            orderId = (String) item.get("orderId");
         }
 
         List<CartInfo> cartInfos = new ArrayList<>();
@@ -79,6 +81,8 @@ public class GetCartHandler implements RequestHandler<CourseCartRequest, CourseC
                 }
             }
         }
+        final String fOrderId = orderId;
+        cartInfos.forEach(c->c.setOrderId(fOrderId));
 
         CourseCartResponse response = new CourseCartResponse();
         response.setCartDetails(cartInfos);

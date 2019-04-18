@@ -1,5 +1,6 @@
 package com.brilliant.academe.domain.cart;
 
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,6 +9,8 @@ import java.math.BigDecimal;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CartInfo implements Serializable {
+
+    private String orderId;
 
     @JsonProperty("id")
     private String courseId;
@@ -27,6 +30,14 @@ public class CartInfo implements Serializable {
     private BigDecimal discountedCoursePrice;
 
     private String skuId;
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
 
     public String getCourseId() {
         return courseId;
@@ -65,7 +76,7 @@ public class CartInfo implements Serializable {
     }
 
     public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
+        this.coverImage = CommonUtils.getSignedUrlForObject(coverImage);
     }
 
     public BigDecimal getCoursePrice() {

@@ -1,7 +1,10 @@
 package com.brilliant.academe.domain.video;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PreviewCourseVideoResponse implements Serializable {
 
     private String signedUrl;

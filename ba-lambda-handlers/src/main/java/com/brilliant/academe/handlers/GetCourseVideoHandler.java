@@ -45,39 +45,19 @@ public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest,
     public CourseVideoResponse execute(CourseVideoRequest courseVideoRequest){
         String userId = CommonUtils.getUserFromToken(courseVideoRequest.getToken());
         CourseVideoResponse courseVideoResponse = new CourseVideoResponse();
-        courseVideoResponse.setSignedUrl("");
-        boolean isCourseExist = checkIfCourseExistforUser(userId, courseVideoRequest.getCourseId());
+        boolean isCourseExist = CommonUtils.checkIfCourseExistforUser(userId, courseVideoRequest.getCourseId(), dynamoDB);
         String lectureLink;
         if(isCourseExist){
             lectureLink = getLectureLink(courseVideoRequest.getCourseId(), courseVideoRequest.getLectureId());
             if(Objects.nonNull(lectureLink)){
-                String signedUrl = getSignedUrl(lectureLink);
+                String signedUrl = CommonUtils.getSignedUrlForObject(lectureLink, dynamoDB);
                 courseVideoResponse.setSignedUrl(signedUrl);
                 courseVideoResponse.setMessage(STATUS_SUCCESS);
             }
         }else{
-            courseVideoResponse.setMessage(VIDEO_NOT_AVAILABLE);
+            courseVideoResponse.setMessage(NOT_AVAILABLE);
         }
         return courseVideoResponse;
-    }
-
-    private boolean checkIfCourseExistforUser(String userId, String courseId){
-        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("userId-index");
-        QuerySpec querySpec = new QuerySpec()
-                .withKeyConditionExpression("userId = :v_user_id")
-                .withValueMap(new ValueMap()
-                        .withString(":v_user_id", userId));
-
-        ItemCollection<QueryOutcome> userCourseItems = index.query(querySpec);
-        List<String> enrolledCourses = new ArrayList();
-        for(Item item: userCourseItems){
-            enrolledCourses.add((String) item.get("courseId"));
-        }
-
-        if(enrolledCourses.contains(courseId)){
-            return true;
-        }
-        return false;
     }
 
     private String getLectureLink(String courseId, String lectureId){
@@ -102,19 +82,5 @@ public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest,
             }
         }
         return null;
-    }
-
-    public String getSignedUrl(String s3ObjectKey) {
-        String[] attributes = {"cfDistributionName", "cfExpirySeconds", "cfKeyPairId", "cfPrivateKey"};
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", CONFIG_ID)
-                .withAttributesToGet(attributes);
-        Item item = dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
-        String cloudFrontDistributionName = (String) item.get("cfDistributionName");
-        BigDecimal expirySecondsInBD = (BigDecimal) item.get("cfExpirySeconds");
-        Integer expirySeconds = expirySecondsInBD.intValue();
-        String cloudFrontKeyPairId = (String) item.get("cfKeyPairId");
-        String cloudFrontPrivateKey = (String) item.get("cfPrivateKey");
-        return CommonUtils.generateSignedUrl(expirySeconds, cloudFrontDistributionName, s3ObjectKey, cloudFrontKeyPairId);
     }
 }
