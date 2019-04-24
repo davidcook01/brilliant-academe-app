@@ -74,11 +74,11 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                 if(section.getLectures() != null && section.getLectures().size() > 0){
                     section.getLectures().forEach(lecture->{
                         lecture.setLectureId(UUID.randomUUID().toString());
-                        lecture.setLectureLink(CF_VIDEOS_ORIGIN_PATH + FORMATTED_COURSE_NAME+"/"+lecture.getLectureLink());
+                        lecture.setLectureLink(CF_VIDEOS_ORIGIN_PATH + "/" + FORMATTED_COURSE_NAME+"/"+lecture.getLectureLink());
                         if(lecture.getMaterials()!= null && lecture.getMaterials().size() > 0) {
                             lecture.getMaterials().forEach(material -> {
                                 material.setMaterialId(UUID.randomUUID().toString());
-                                material.setMaterialLink(CF_VIDEOS_ORIGIN_PATH + FORMATTED_COURSE_NAME + "/" + material.getMaterialLink());
+                                material.setMaterialLink(CF_VIDEOS_ORIGIN_PATH + "/" + FORMATTED_COURSE_NAME + "/" + material.getMaterialLink());
                             });
                         }
                     });
