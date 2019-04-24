@@ -2,25 +2,16 @@ package com.brilliant.academe.handlers;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.*;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.CourseLecture;
 import com.brilliant.academe.domain.course.CourseSection;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.brilliant.academe.domain.video.CourseVideoRequest;
 import com.brilliant.academe.domain.video.CourseVideoResponse;
 import com.brilliant.academe.util.CommonUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -61,20 +52,7 @@ public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest,
     }
 
     private String getLectureLink(String courseId, String lectureId){
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", courseId)
-                .withAttributesToGet("id", "resources");
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        GetCourseLectureResponse response = new GetCourseLectureResponse();
-        if(Objects.nonNull(item)){
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                response = objectMapper.readValue(item.toJSON(), GetCourseLectureResponse.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        GetCourseLectureResponse response = CommonUtils.getCourseLectures(courseId, dynamoDB);
         for(CourseSection section: response.getCourseSection()){
             for(CourseLecture lecture: section.getLectures()){
                 if(lecture.getLectureId().equals(lectureId))

@@ -3,15 +3,11 @@ package com.brilliant.academe.handlers;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.course.*;
 import com.brilliant.academe.util.CommonUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -49,20 +45,7 @@ public class GetCourseMaterialHandler implements RequestHandler<CourseMaterialRe
     }
 
     private String getMaterialLink(CourseMaterialRequest courseMaterialRequest){
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", courseMaterialRequest.getCourseId())
-                .withAttributesToGet("id", "resources");
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        GetCourseLectureResponse response = new GetCourseLectureResponse();
-        if(Objects.nonNull(item)){
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                response = objectMapper.readValue(item.toJSON(), GetCourseLectureResponse.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        GetCourseLectureResponse response = CommonUtils.getCourseLectures(courseMaterialRequest.getCourseId(), dynamoDB);
         String materialLink = null;
         if(Objects.nonNull(response.getCourseSection()) && response.getCourseSection().size() > 0){
             for(CourseSection section: response.getCourseSection()){
@@ -81,7 +64,6 @@ public class GetCourseMaterialHandler implements RequestHandler<CourseMaterialRe
                 }
             }
         }
-
         return materialLink;
     }
 }

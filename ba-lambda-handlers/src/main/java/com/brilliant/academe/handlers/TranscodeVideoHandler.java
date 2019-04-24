@@ -23,8 +23,11 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
 
     @Override
     public String handleRequest(S3Event event, Context context) {
-        context.getLogger().log("Received event: " + event);
+        return execute(event, context);
+    }
 
+    public String execute(S3Event event, Context context){
+        context.getLogger().log("Received event: " + event);
         // Get the object from the event and show its content type
         String bucket = event.getRecords().get(0).getS3().getBucket().getName();
         String key = event.getRecords().get(0).getS3().getObject().getKey();
@@ -44,7 +47,7 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
 
             CreateJobOutput output2 = new CreateJobOutput().withKey(outputKey + "_720p")
                     .withPresetId("1550770524254-cgtysk")
-                            .withSegmentDuration("60");
+                    .withSegmentDuration("60");
             outputs.add(output2);
 
             CreateJobOutput output3 = new CreateJobOutput().withKey(outputKey + "_360p")
@@ -70,5 +73,6 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
             }
         }
         return null;
+
     }
 }

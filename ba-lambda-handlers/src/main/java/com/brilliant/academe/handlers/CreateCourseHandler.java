@@ -5,10 +5,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.course.CreateCourseRequest;
 import com.brilliant.academe.domain.course.CreateCourseResponse;
@@ -46,27 +48,37 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     }
 
     public CreateCourseResponse execute(CreateCourseRequest createCourseRequest){
-        persistData(createCourseRequest);
+        String cfDistributionName = getConfigInfo();
+        persistData(createCourseRequest, cfDistributionName);
         CreateCourseResponse response = new CreateCourseResponse();
         response.setMessage(courseId);
         return response;
     }
 
-    private void persistData(CreateCourseRequest createCourseRequest)
+    private String getConfigInfo(){
+        String[] attributes = {"cfDistributionName"};
+        GetItemSpec itemSpec = new GetItemSpec()
+                .withPrimaryKey("id", CONFIG_ID)
+                .withAttributesToGet(attributes);
+        Item item = dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
+        return (String) item.get("cfDistributionName");
+    }
+
+    private void persistData(CreateCourseRequest createCourseRequest, String cfDistributionName)
             throws ConditionalCheckFailedException {
 
-        String formattedCourseName = createCourseRequest.getCourseName().replaceAll(" ", "+");
-
+        String FORMATTED_COURSE_NAME = createCourseRequest.getCourseName().replaceAll(" ", "+");
+        String CF_IMAGE_URL = "https://" + cfDistributionName + CF_IMAGES_ORIGIN_PATH;
         if(createCourseRequest.getSections() != null && createCourseRequest.getSections().size() > 0){
             createCourseRequest.getSections().forEach(section -> {
                 if(section.getLectures() != null && section.getLectures().size() > 0){
                     section.getLectures().forEach(lecture->{
                         lecture.setLectureId(UUID.randomUUID().toString());
-                        lecture.setLectureLink(formattedCourseName+"/"+lecture.getLectureLink());
+                        lecture.setLectureLink(CF_VIDEOS_ORIGIN_PATH + FORMATTED_COURSE_NAME+"/"+lecture.getLectureLink());
                         if(lecture.getMaterials()!= null && lecture.getMaterials().size() > 0) {
                             lecture.getMaterials().forEach(material -> {
                                 material.setMaterialId(UUID.randomUUID().toString());
-                                material.setMaterialLink(formattedCourseName + "/" + material.getMaterialLink());
+                                material.setMaterialLink(CF_VIDEOS_ORIGIN_PATH + FORMATTED_COURSE_NAME + "/" + material.getMaterialLink());
                             });
                         }
                     });
@@ -96,7 +108,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("id", courseId)
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
-                    .withString("coverImage", formattedCourseName + "/" + createCourseRequest.getCoverImage())
+                    .withString("coverImage", CF_IMAGE_URL + FORMATTED_COURSE_NAME + "/" + createCourseRequest.getCoverImage())
                     .withString("courseLevel", createCourseRequest.getCourseLevel())
                     .withDouble("price", createCourseRequest.getCoursePrice().doubleValue())
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
@@ -112,7 +124,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         String skuId = "NA";
         if(!createCourseRequest.getDiscountedCoursePrice().equals(new BigDecimal(0))) {
             skuId = createProductAndSkuInStripe(createCourseRequest.getDiscountedCoursePrice(),
-                    createCourseRequest.getCourseName(), createCourseRequest.getCoverImage(), formattedCourseName);
+                    createCourseRequest.getCourseName(), createCourseRequest.getCoverImage(), FORMATTED_COURSE_NAME, CF_IMAGE_URL);
         }
 
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE)
@@ -122,7 +134,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withDouble("discountedPrice", createCourseRequest.getDiscountedCoursePrice().doubleValue())
                     .withString("courseName", createCourseRequest.getCourseName())
                     .withString("description", createCourseRequest.getCourseDescription())
-                    .withString("coverImage",formattedCourseName + "/" + createCourseRequest.getCoverImage())
+                    .withString("coverImage",CF_IMAGE_URL + FORMATTED_COURSE_NAME + "/" + createCourseRequest.getCoverImage())
                     .withString("courseLevel", createCourseRequest.getCourseLevel())
                     .withString("instructorId", createCourseRequest.getInstructorId())
                     .withString("instructorName", createCourseRequest.getInstructorName())
@@ -132,10 +144,10 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withJSON("resources", sectionDetails)));
     }
 
-    private String createProductAndSkuInStripe(BigDecimal amount, String courseName, String coverImage, String formattedCourseName){
+    private String createProductAndSkuInStripe(BigDecimal amount, String courseName, String coverImage, String formattedCourseName, String imageUrl){
         Float centAmount = amount.floatValue()*100;
         Integer centAmountRounded = centAmount.intValue();
-        String image = S3_IMAGE_UPLOAD_FOLDER+formattedCourseName+"/"+coverImage;
+        String image = imageUrl + formattedCourseName+"/"+coverImage;
         System.out.println("Image Location:"+ image);
         Stripe.apiKey = STRIPE_SECRET_KEY;
 

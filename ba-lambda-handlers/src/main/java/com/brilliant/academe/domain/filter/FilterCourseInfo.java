@@ -1,6 +1,5 @@
 package com.brilliant.academe.domain.filter;
 
-import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -65,7 +64,7 @@ public class FilterCourseInfo implements Serializable {
     }
 
     public void setCoverImage(String coverImage) {
-        this.coverImage = CommonUtils.getSignedUrlForObject(coverImage);
+        this.coverImage = coverImage;
     }
 
     public String getInstructorId() {

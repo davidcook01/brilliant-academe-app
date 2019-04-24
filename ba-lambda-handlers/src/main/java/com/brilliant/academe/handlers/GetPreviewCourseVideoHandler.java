@@ -3,21 +3,15 @@ package com.brilliant.academe.handlers;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.CourseLecture;
 import com.brilliant.academe.domain.course.CourseSection;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.brilliant.academe.domain.video.PreviewCourseVideoRequest;
 import com.brilliant.academe.domain.video.PreviewCourseVideoResponse;
 import com.brilliant.academe.util.CommonUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -53,20 +47,7 @@ public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCours
     }
 
     private String getLectureLink(String courseId, String lectureId){
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", courseId)
-                .withAttributesToGet("id", "resources");
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        GetCourseLectureResponse response = new GetCourseLectureResponse();
-        if(Objects.nonNull(item)){
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                response = objectMapper.readValue(item.toJSON(), GetCourseLectureResponse.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        GetCourseLectureResponse response = CommonUtils.getCourseLectures(courseId, dynamoDB);
         for(CourseSection section: response.getCourseSection()){
             for(CourseLecture lecture: section.getLectures()){
                 if(lecture.getLectureId().equals(lectureId))
@@ -74,7 +55,6 @@ public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCours
                         return lecture.getLectureLink();
             }
         }
-
         return null;
     }
 }

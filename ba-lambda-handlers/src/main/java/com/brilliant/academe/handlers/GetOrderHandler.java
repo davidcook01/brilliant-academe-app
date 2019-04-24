@@ -7,24 +7,25 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.course.GetCourseRequest;
-import com.brilliant.academe.domain.course.GetCourseResponse;
+import com.brilliant.academe.domain.order.GetOrderRequest;
+import com.brilliant.academe.domain.order.GetOrderResponse;
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Objects;
 
-import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE_RESOURCE;
+import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_ORDER;
 import static com.brilliant.academe.constant.Constant.REGION;
 
-public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCourseResponse> {
+public class GetOrderHandler implements RequestHandler<GetOrderRequest, GetOrderResponse> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public GetCourseResponse handleRequest(GetCourseRequest courseRequest, Context context) {
+    public GetOrderResponse handleRequest(GetOrderRequest getOrderRequest, Context context) {
         initDynamoDbClient();
-        return execute(courseRequest);
+        return execute(getOrderRequest);
     }
 
     private void initDynamoDbClient() {
@@ -34,23 +35,22 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
         dynamoDB = new DynamoDB(client);
     }
 
-    public GetCourseResponse execute(GetCourseRequest courseRequest){
-        String[] attributes = {"id", "courseDuration", "courseLevel", "courseName",
-                "courseType", "coverImage", "description", "discountedPrice",
-                "instructorId", "instructorName", "price", "courseRating", "skuId"};
+    public GetOrderResponse execute(GetOrderRequest orderRequest){
+        String userId = CommonUtils.getUserFromToken(orderRequest.getToken());
+        String[] attributes = {"id", "orderStatus", "transactionId", "userId"};
 
         GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", courseRequest.getCourseId())
+                .withPrimaryKey("id", orderRequest.getOrderId())
                 .withAttributesToGet(attributes);
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        GetCourseResponse courseResponse = new GetCourseResponse();
-        if(Objects.nonNull(item)){
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER).getItem(itemSpec);
+        GetOrderResponse orderResponse = new GetOrderResponse();
+        if(Objects.nonNull(item) && item.get("userId").equals(userId)){
             try {
-                courseResponse = new ObjectMapper().readValue(item.toJSON(), GetCourseResponse.class);
+                orderResponse = new ObjectMapper().readValue(item.toJSON(), GetOrderResponse.class);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return courseResponse;
+        return orderResponse;
     }
 }

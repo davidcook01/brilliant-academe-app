@@ -14,7 +14,10 @@ import com.brilliant.academe.domain.checkout.StripeCheckoutEvent;
 import com.brilliant.academe.domain.checkout.StripeCheckoutResponse;
 import com.brilliant.academe.domain.payment.PaymentGatewayWebhookRequest;
 import com.google.gson.Gson;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.PaymentIntent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,12 +51,34 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
             System.out.println("***"+new Gson().toJson(checkoutEvent));
             String orderId = checkoutEvent.getClient_reference_id();
             String userId = getUserId(orderId);
-            if(Objects.nonNull(userId)){
+            String paymentIntentId = checkoutEvent.getPayment_intent();
+
+            Stripe.apiKey = STRIPE_SECRET_KEY;
+            String paymentIntentJson = "NA";
+            boolean isPaymentSucceeded = false;
+            try {
+                PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+                paymentIntentJson = new Gson().toJson(paymentIntent);
+                System.out.println("**"+ paymentIntentJson);
+                if(Objects.nonNull(paymentIntent) && Objects.nonNull(paymentIntent.getCharges())
+                    && Objects.nonNull(paymentIntent.getCharges().getData())
+                        && Objects.nonNull(paymentIntent.getCharges().getData().size() > 0)
+                        && paymentIntent.getCharges().getData().get(0).getStatus().equals("succeeded")
+                        && paymentIntent.getStatus().equals("succeeded")){
+                    isPaymentSucceeded = true;
+                }
+                System.out.println("Payment Succeeded:"+ isPaymentSucceeded);
+
+            } catch (StripeException e) {
+                e.printStackTrace();
+            }
+
+            if(Objects.nonNull(userId) && isPaymentSucceeded){
                 List<String> skuIds = new ArrayList<>();
                 checkoutEvent.getDisplay_items().forEach(s->skuIds.add(s.getSku().getId()));
                 List<String> courses = getCourses(skuIds);
                 String transactionId = event.getId();
-                updateOrderDetails(checkoutEvent, orderId, userId, transactionId);
+                updateOrderDetails(checkoutEvent, orderId, userId, transactionId, paymentIntentJson);
                 updateCart(userId, courses, orderId, transactionId);
                 enrollCourses(courses, userId);
             }
@@ -129,7 +154,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
     }
 
 
-    private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String userId, String transactionId){
+    private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String userId, String transactionId, String paymentIntentDeatils){
         String orderDetailsJson = "NA";
         if(Objects.nonNull(checkoutEvent))
             orderDetailsJson = new Gson().toJson(checkoutEvent);
@@ -141,7 +166,8 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
                 .withString("transactionId", transactionId)
                 .withString("userId", userId)
                 .withString("orderStatus", orderStatus)
-                .withString("orderDetails", orderDetailsJson)));
+                .withString("orderDetails", orderDetailsJson)
+                .withString("paymentDetails", paymentIntentDeatils)));
     }
 
 
@@ -154,6 +180,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
                     .withNumber("percentageCompleted", 0));
             dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).putItem(putItemSpec);
         }
+
     }
 
 }

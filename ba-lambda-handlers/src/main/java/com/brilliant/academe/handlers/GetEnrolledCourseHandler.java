@@ -4,8 +4,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.BatchGetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.enrollment.EnrollCourseInfo;
@@ -20,7 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.brilliant.academe.constant.Constant.*;
+import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE_RESOURCE;
+import static com.brilliant.academe.constant.Constant.REGION;
 
 public class GetEnrolledCourseHandler implements RequestHandler<GetEnrolledCourseRequest, GetEnrolledCourseResponse> {
 
@@ -41,13 +40,8 @@ public class GetEnrolledCourseHandler implements RequestHandler<GetEnrolledCours
 
     public GetEnrolledCourseResponse execute(GetEnrolledCourseRequest enrolledCourseRequest){
         String userId = CommonUtils.getUserFromToken(enrolledCourseRequest.getToken());
-        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("userId-index");
-        QuerySpec querySpec = new QuerySpec()
-                .withKeyConditionExpression("userId = :v_user_id")
-                .withValueMap(new ValueMap()
-                        .withString(":v_user_id", userId));
+        ItemCollection<QueryOutcome> userCourseItems = CommonUtils.getUserEnrolledCourses(userId, dynamoDB);
 
-        ItemCollection<QueryOutcome> userCourseItems = index.query(querySpec);
         List<String> enrolledCourses = new ArrayList();
         for(Item item: userCourseItems){
             enrolledCourses.add((String) item.get("courseId"));

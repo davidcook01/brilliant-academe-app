@@ -18,7 +18,8 @@ public class Constant {
     public static final String STRIPE_SECRET_KEY = "sk_test_UTifZqEZPT8SyQBTrWCSwfAn00xySX7uI7";
     public static final String ELASTIC_TRANSCODER_PIPELINE_ID = "1551221588927-5zpuyx";
 
-    public static final String S3_IMAGE_UPLOAD_FOLDER = "https://s3.amazonaws.com/brilliant-academe-image-upload/";
+    public static final String CF_IMAGES_ORIGIN_PATH = "/images/";
+    public static final String CF_VIDEOS_ORIGIN_PATH = "/content/";
 
     public static final String STATUS_IN_PROCESS = "INPROCESS";
     public static final String STATUS_SUBMITTED = "SUBMITTED";
