@@ -1,11 +1,13 @@
-package com.brilliant.academe.domain.video;
+package com.brilliant.academe.domain.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CourseVideoResponse implements Serializable {
+public class CommonResponse implements Serializable {
 
     private String signedUrl;
     private String message;
@@ -25,4 +27,5 @@ public class CourseVideoResponse implements Serializable {
     public void setMessage(String message) {
         this.message = message;
     }
+
 }

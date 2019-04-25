@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.*;
 import com.brilliant.academe.util.CommonUtils;
 
@@ -12,12 +13,12 @@ import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class GetCourseMaterialHandler implements RequestHandler<CourseMaterialRequest, CourseMaterialResponse> {
+public class GetCourseMaterialHandler implements RequestHandler<CourseMaterialRequest, CommonResponse> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public CourseMaterialResponse handleRequest(CourseMaterialRequest courseMaterialRequest, Context context) {
+    public CommonResponse handleRequest(CourseMaterialRequest courseMaterialRequest, Context context) {
         initDynamoDbClient();
         return execute(courseMaterialRequest);
     }
@@ -29,10 +30,10 @@ public class GetCourseMaterialHandler implements RequestHandler<CourseMaterialRe
         dynamoDB = new DynamoDB(client);
     }
 
-    public CourseMaterialResponse execute(CourseMaterialRequest courseMaterialRequest){
+    public CommonResponse execute(CourseMaterialRequest courseMaterialRequest){
         String userId = CommonUtils.getUserFromToken(courseMaterialRequest.getToken());
         boolean isCourseExist = CommonUtils.checkIfCourseExistforUser(userId, courseMaterialRequest.getCourseId(), dynamoDB);
-        CourseMaterialResponse courseMaterialResponse = new CourseMaterialResponse();
+        CommonResponse courseMaterialResponse = new CommonResponse();
         courseMaterialResponse.setMessage(NOT_AVAILABLE);
         if(isCourseExist){
             String materialLink = getMaterialLink(courseMaterialRequest);

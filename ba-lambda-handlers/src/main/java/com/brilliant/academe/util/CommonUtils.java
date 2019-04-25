@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.BatchGetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.brilliant.academe.constant.Constant;
@@ -15,6 +16,7 @@ import org.apache.commons.codec.binary.Base64;
 import java.io.*;
 import java.math.BigDecimal;
 import java.security.spec.InvalidKeySpecException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -136,5 +138,21 @@ public class CommonUtils {
                         .withString(":v_user_id", userId)
                         .withString(":v_cart_status", STATUS_IN_PROCESS));
         return  index.query(querySpec);
+    }
+
+    public static String getDateTime(){
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+        return sdf.format(date);
+    }
+
+    public static void enrollUserCourse(String userId, String courseId, DynamoDB dynamoDB){
+        PutItemSpec putItemSpec = new PutItemSpec();
+        putItemSpec.withItem(new Item()
+                .withString("userId", userId)
+                .withString("courseId", courseId)
+                .withNumber("percentageCompleted", 0));
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).putItem(putItemSpec);
     }
 }

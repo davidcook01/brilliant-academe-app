@@ -5,23 +5,23 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.CourseLecture;
 import com.brilliant.academe.domain.course.CourseSection;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.brilliant.academe.domain.video.PreviewCourseVideoRequest;
-import com.brilliant.academe.domain.video.PreviewCourseVideoResponse;
 import com.brilliant.academe.util.CommonUtils;
 
 import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCourseVideoRequest, PreviewCourseVideoResponse> {
+public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCourseVideoRequest, CommonResponse> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public PreviewCourseVideoResponse handleRequest(PreviewCourseVideoRequest previewCourseVideoRequest, Context context) {
+    public CommonResponse handleRequest(PreviewCourseVideoRequest previewCourseVideoRequest, Context context) {
         initDynamoDbClient();
         return execute(previewCourseVideoRequest);
     }
@@ -33,8 +33,8 @@ public class GetPreviewCourseVideoHandler implements RequestHandler<PreviewCours
         dynamoDB = new DynamoDB(client);
     }
 
-    public PreviewCourseVideoResponse execute(PreviewCourseVideoRequest previewCourseVideoRequest){
-        PreviewCourseVideoResponse previewCourseVideoResponse = new PreviewCourseVideoResponse();
+    public CommonResponse execute(PreviewCourseVideoRequest previewCourseVideoRequest){
+        CommonResponse previewCourseVideoResponse = new CommonResponse();
         String lectureLink = getLectureLink(previewCourseVideoRequest.getCourseId(), previewCourseVideoRequest.getLectureId());
         if(Objects.nonNull(lectureLink)) {
             String signedUrl = CommonUtils.getSignedUrlForObject(lectureLink, dynamoDB);

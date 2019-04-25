@@ -5,23 +5,23 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.CourseLecture;
 import com.brilliant.academe.domain.course.CourseSection;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.brilliant.academe.domain.video.CourseVideoRequest;
-import com.brilliant.academe.domain.video.CourseVideoResponse;
 import com.brilliant.academe.util.CommonUtils;
 
 import java.util.Objects;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest, CourseVideoResponse> {
+public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest, CommonResponse> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public CourseVideoResponse handleRequest(CourseVideoRequest courseVideoRequest, Context context) {
+    public CommonResponse handleRequest(CourseVideoRequest courseVideoRequest, Context context) {
         initDynamoDbClient();
         return execute(courseVideoRequest);
     }
@@ -33,9 +33,9 @@ public class GetCourseVideoHandler implements RequestHandler<CourseVideoRequest,
         dynamoDB = new DynamoDB(client);
     }
 
-    public CourseVideoResponse execute(CourseVideoRequest courseVideoRequest){
+    public CommonResponse execute(CourseVideoRequest courseVideoRequest){
         String userId = CommonUtils.getUserFromToken(courseVideoRequest.getToken());
-        CourseVideoResponse courseVideoResponse = new CourseVideoResponse();
+        CommonResponse courseVideoResponse = new CommonResponse();
         boolean isCourseExist = CommonUtils.checkIfCourseExistforUser(userId, courseVideoRequest.getCourseId(), dynamoDB);
         String lectureLink;
         if(isCourseExist){

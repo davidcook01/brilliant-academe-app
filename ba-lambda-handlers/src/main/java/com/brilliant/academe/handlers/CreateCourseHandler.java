@@ -11,9 +11,9 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.constant.Constant;
+import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.course.CreateCourseRequest;
-import com.brilliant.academe.domain.course.CreateCourseResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.Stripe;
@@ -29,13 +29,13 @@ import java.util.UUID;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, CreateCourseResponse> {
+public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, CommonResponse> {
 
     private DynamoDB dynamoDB;
     private String courseId;
 
     @Override
-    public CreateCourseResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
+    public CommonResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
         initDynamoDbClient();
         return execute(createCourseRequest);
     }
@@ -47,10 +47,10 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         dynamoDB = new DynamoDB(client);
     }
 
-    public CreateCourseResponse execute(CreateCourseRequest createCourseRequest){
+    public CommonResponse execute(CreateCourseRequest createCourseRequest){
         String cfDistributionName = getConfigInfo();
         persistData(createCourseRequest, cfDistributionName);
-        CreateCourseResponse response = new CreateCourseResponse();
+        CommonResponse response = new CommonResponse();
         response.setMessage(courseId);
         return response;
     }

@@ -13,6 +13,7 @@ import com.brilliant.academe.domain.cart.CourseCartRequest;
 import com.brilliant.academe.domain.cart.CourseCartResponse;
 import com.brilliant.academe.util.CommonUtils;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -49,14 +50,17 @@ public class AddCartHandler implements RequestHandler<CourseCartRequest, CourseC
             orderId = UUID.randomUUID().toString();
         }
 
-        String skuId = (String) dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", request.getCourseId()).get("skuId");
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", request.getCourseId());
+        String skuId = (String) item.get("skuId");
+        BigDecimal amount = (BigDecimal) item.get("discountedPrice");
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART).putItem(new PutItemSpec().withItem(new Item()
                 .withString("orderId", orderId)
                 .withString("userId", userId)
                 .withString("courseId", request.getCourseId())
                 .withString("skuId", skuId)
+                .withNumber("amount", amount)
+                .withString("createdDate", CommonUtils.getDateTime())
                 .withString("cartStatus", STATUS_IN_PROCESS)));
-
         CourseCartResponse response = new CourseCartResponse();
         response.setMessage(orderId);
         return response;
