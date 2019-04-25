@@ -37,7 +37,8 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     public GetCourseResponse execute(GetCourseRequest courseRequest){
         String[] attributes = {"id", "courseDuration", "courseLevel", "courseName",
                 "courseType", "coverImage", "description", "discountedPrice",
-                "instructorId", "instructorName", "price", "courseRating", "skuId"};
+                "instructorId", "instructorName", "price", "courseRating", "skuId",
+                "totalRating", "totalEnrolled"};
 
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseRequest.getCourseId())

@@ -26,6 +26,7 @@ public class Constant {
     public static final String STATUS_SUCCESS = "SUCCESS";
 
     public static final String EVENT_MODIFY = "MODIFY";
+    public static final String EVENT_INSERT = "INSERT";
     public static final String NOT_AVAILABLE = "NOT AVAILABLE";
 
     public static final String CONFIG_ID = "1";

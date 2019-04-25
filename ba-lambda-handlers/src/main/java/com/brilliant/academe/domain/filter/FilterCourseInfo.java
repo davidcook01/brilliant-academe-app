@@ -1,12 +1,14 @@
 package com.brilliant.academe.domain.filter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FilterCourseInfo implements Serializable {
 
     @JsonProperty("id")
@@ -34,6 +36,10 @@ public class FilterCourseInfo implements Serializable {
 
     @JsonProperty("discountedPrice")
     private BigDecimal discountedCoursePrice;
+
+    private Integer totalEnrolled;
+
+    private Integer totalRating;
 
     public String getCourseId() {
         return courseId;
@@ -121,5 +127,21 @@ public class FilterCourseInfo implements Serializable {
 
     public void setDiscountedCoursePrice(BigDecimal discountedCoursePrice) {
         this.discountedCoursePrice = discountedCoursePrice;
+    }
+
+    public Integer getTotalEnrolled() {
+        return totalEnrolled;
+    }
+
+    public void setTotalEnrolled(Integer totalEnrolled) {
+        this.totalEnrolled = totalEnrolled;
+    }
+
+    public Integer getTotalRating() {
+        return totalRating;
+    }
+
+    public void setTotalRating(Integer totalRating) {
+        this.totalRating = totalRating;
     }
 }

@@ -155,4 +155,23 @@ public class CommonUtils {
                 .withNumber("percentageCompleted", 0));
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).putItem(putItemSpec);
     }
+
+    public static ItemCollection<QueryOutcome> getUsersByCourseId(String courseId, DynamoDB dynamoDB){
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER_COURSE).getIndex("courseId-index");
+        QuerySpec querySpec = new QuerySpec()
+                .withKeyConditionExpression("courseId = :v_course_id")
+                .withValueMap(new ValueMap()
+                        .withString(":v_course_id", courseId));
+        return index.query(querySpec);
+    }
+
+    public static ItemCollection<QueryOutcome> getCoursesByCourseIdInMaster(String courseId, DynamoDB dynamoDB){
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).getIndex("id-index");
+        QuerySpec querySpec = new QuerySpec()
+                .withKeyConditionExpression("id = :v_course_id")
+                .withValueMap(new ValueMap()
+                        .withString(":v_course_id", courseId));
+
+        return index.query(querySpec);
+    }
 }
