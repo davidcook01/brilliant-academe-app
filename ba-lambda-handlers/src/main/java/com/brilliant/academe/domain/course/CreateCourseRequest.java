@@ -8,6 +8,7 @@ public class CreateCourseRequest implements Serializable {
 
     private String courseName;
     private String courseDescription;
+    private String detailedDescription;
     private String coverImage;
     private List<CourseCategory> courseCategories;
     private String instructorId;
@@ -34,6 +35,14 @@ public class CreateCourseRequest implements Serializable {
 
     public void setCourseDescription(String courseDescription) {
         this.courseDescription = courseDescription;
+    }
+
+    public String getDetailedDescription() {
+        return detailedDescription;
+    }
+
+    public void setDetailedDescription(String detailedDescription) {
+        this.detailedDescription = detailedDescription;
     }
 
     public String getCoverImage() {

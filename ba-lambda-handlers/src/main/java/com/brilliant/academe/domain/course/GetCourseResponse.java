@@ -19,6 +19,8 @@ public class GetCourseResponse implements Serializable {
     @JsonProperty("description")
     private String courseDescription;
 
+    private String detailedDescription;
+
     private String coverImage;
 
     private String instructorId;
@@ -65,6 +67,14 @@ public class GetCourseResponse implements Serializable {
 
     public void setCourseDescription(String courseDescription) {
         this.courseDescription = courseDescription;
+    }
+
+    public String getDetailedDescription() {
+        return detailedDescription;
+    }
+
+    public void setDetailedDescription(String detailedDescription) {
+        this.detailedDescription = detailedDescription;
     }
 
     public String getCoverImage() {

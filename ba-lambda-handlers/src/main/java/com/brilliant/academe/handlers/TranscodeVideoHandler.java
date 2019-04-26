@@ -1,5 +1,9 @@
 package com.brilliant.academe.handlers;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.elastictranscoder.AmazonElasticTranscoder;
 import com.amazonaws.services.elastictranscoder.AmazonElasticTranscoderClient;
 import com.amazonaws.services.elastictranscoder.model.CreateJobOutput;
@@ -8,22 +12,41 @@ import com.amazonaws.services.elastictranscoder.model.JobInput;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.brilliant.academe.util.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.brilliant.academe.constant.Constant.ELASTIC_TRANSCODER_PIPELINE_ID;
+import static com.brilliant.academe.constant.Constant.REGION;
 
 public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
 
-    private AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
-    private AmazonElasticTranscoder amazonElasticTranscoder = AmazonElasticTranscoderClient.builder().build();
+    private AmazonElasticTranscoder amazonElasticTranscoder;
+    private DynamoDB dynamoDB;
+    private Item item;
+    private String[] attributes = {"cfDistributionName", "stripeSecretKey"};
 
     @Override
     public String handleRequest(S3Event event, Context context) {
+        initElasticTranscoder();
+        initDynamoDbClient();
+        initConfig();
         return execute(event, context);
+    }
+
+    private void initElasticTranscoder(){
+        amazonElasticTranscoder = AmazonElasticTranscoderClient.builder().build();
+    }
+
+    private void initDynamoDbClient() {
+        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+                .withRegion(REGION)
+                .build();
+        dynamoDB = new DynamoDB(client);
+    }
+
+    private void initConfig(){
+        item = CommonUtils.getConfigInfo(dynamoDB, attributes);
     }
 
     public String execute(S3Event event, Context context){
@@ -56,7 +79,8 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
             outputs.add(output3);
 
             // Create a job on the specified pipeline and return the job ID.
-            CreateJobRequest createJobRequest = new CreateJobRequest().withPipelineId(ELASTIC_TRANSCODER_PIPELINE_ID)
+            String transcoderPipelineId = (String) item.get("transcoderPipelineId");
+            CreateJobRequest createJobRequest = new CreateJobRequest().withPipelineId(transcoderPipelineId)
                     .withOutputKeyPrefix(outputKey + "/").withInput(input).withOutputs(outputs);
 
             return amazonElasticTranscoder.createJob(createJobRequest).getJob().getId();

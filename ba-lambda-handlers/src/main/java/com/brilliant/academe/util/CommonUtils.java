@@ -174,4 +174,11 @@ public class CommonUtils {
 
         return index.query(querySpec);
     }
+
+    public static Item getConfigInfo(DynamoDB dynamoDB, String[] attributes){
+        GetItemSpec itemSpec = new GetItemSpec()
+                .withPrimaryKey("id", CONFIG_ID)
+                .withAttributesToGet(attributes);
+        return dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
+    }
 }

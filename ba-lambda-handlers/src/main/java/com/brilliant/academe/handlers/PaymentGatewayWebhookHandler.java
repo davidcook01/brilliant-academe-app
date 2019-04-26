@@ -30,10 +30,13 @@ import static com.brilliant.academe.constant.Constant.*;
 public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatewayWebhookRequest, Void> {
 
     private DynamoDB dynamoDB;
+    private Item item;
+    private String[] attributes = {"stripeSecretKey"};
 
     @Override
     public Void handleRequest(PaymentGatewayWebhookRequest request, Context context)  {
         initDynamoDbClient();
+        initConfig();
         String stripeJson = new Gson().toJson(request.getEventJson());
         return execute(stripeJson);
     }
@@ -43,6 +46,10 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
                 .withRegion(REGION)
                 .build();
         dynamoDB = new DynamoDB(client);
+    }
+
+    private void initConfig(){
+        item = CommonUtils.getConfigInfo(dynamoDB, attributes);
     }
 
     public Void execute(String stripeJson){
@@ -55,7 +62,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
             String userId = getUserId(orderId);
             String paymentIntentId = checkoutEvent.getPayment_intent();
 
-            Stripe.apiKey = STRIPE_SECRET_KEY;
+            Stripe.apiKey = (String) item.get("stripeSecretKey");
             String paymentIntentJson = "NA";
             boolean isPaymentSucceeded = false;
             Long amount = 0L;
@@ -176,12 +183,10 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
                 .withString("paymentDetails", paymentIntentDeatils)));
     }
 
-
     private void enrollCourses(List<String> courses, String userId){
         for(String courseId: courses){
             CommonUtils.enrollUserCourse(userId, courseId, dynamoDB);
         }
 
     }
-
 }

@@ -5,15 +5,14 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.course.CreateCourseRequest;
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.Stripe;
@@ -33,10 +32,13 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
 
     private DynamoDB dynamoDB;
     private String courseId;
+    private Item item;
+    private String[] attributes = {"cfDistributionName", "stripeSecretKey"};
 
     @Override
     public CommonResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
         initDynamoDbClient();
+        initConfig();
         return execute(createCourseRequest);
     }
 
@@ -47,21 +49,16 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         dynamoDB = new DynamoDB(client);
     }
 
+    private void initConfig(){
+        item = CommonUtils.getConfigInfo(dynamoDB, attributes);
+    }
+
     public CommonResponse execute(CreateCourseRequest createCourseRequest){
-        String cfDistributionName = getConfigInfo();
+        String cfDistributionName = (String) item.get("cfDistributionName");
         persistData(createCourseRequest, cfDistributionName);
         CommonResponse response = new CommonResponse();
         response.setMessage(courseId);
         return response;
-    }
-
-    private String getConfigInfo(){
-        String[] attributes = {"cfDistributionName"};
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", CONFIG_ID)
-                .withAttributesToGet(attributes);
-        Item item = dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
-        return (String) item.get("cfDistributionName");
     }
 
     private void persistData(CreateCourseRequest createCourseRequest, String cfDistributionName)
@@ -140,6 +137,8 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
                     .withString("instructorName", createCourseRequest.getInstructorName())
                     .withNumber("courseDuration", createCourseRequest.getCourseDuration())
                     .withString("courseType", createCourseRequest.getCourseType())
+                    .withString("createdDate", CommonUtils.getDateTime())
+                    .withString("detailedDescription", createCourseRequest.getDetailedDescription())
                     .withString("skuId", skuId)
                     .withJSON("resources", sectionDetails)));
     }
@@ -149,7 +148,8 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         Integer centAmountRounded = centAmount.intValue();
         String image = imageUrl + formattedCourseName+"/"+coverImage;
         System.out.println("Image Location:"+ image);
-        Stripe.apiKey = STRIPE_SECRET_KEY;
+
+        Stripe.apiKey = (String) item.get("stripeSecretKey");
 
         Map<String, Object> productParams = new HashMap<>();
         productParams.put("name", courseName);
