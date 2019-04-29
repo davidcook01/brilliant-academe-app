@@ -15,7 +15,7 @@ public class Constant {
     public static final String DYNAMODB_TABLE_NAME_USER_COURSE = "ba_user_course";
     public static final String DYNAMODB_TABLE_NAME_CONFIG = "ba_config";
 
-    public static final String CF_IMAGES_ORIGIN_PATH = "/images/";
+    public static final String CF_IMAGES_ORIGIN_PATH = "images";
     public static final String CF_VIDEOS_ORIGIN_PATH = "content";
 
     public static final String STATUS_IN_PROCESS = "INPROCESS";

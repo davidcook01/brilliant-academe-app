@@ -65,7 +65,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
             throws ConditionalCheckFailedException {
 
         String FORMATTED_COURSE_NAME = createCourseRequest.getCourseName().replaceAll(" ", "+");
-        String CF_IMAGE_URL = "https://" + cfDistributionName + CF_IMAGES_ORIGIN_PATH;
+        String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/";
         if(createCourseRequest.getSections() != null && createCourseRequest.getSections().size() > 0){
             createCourseRequest.getSections().forEach(section -> {
                 if(section.getLectures() != null && section.getLectures().size() > 0){
