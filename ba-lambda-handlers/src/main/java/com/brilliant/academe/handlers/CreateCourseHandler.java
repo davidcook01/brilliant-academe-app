@@ -9,37 +9,38 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.brilliant.academe.domain.common.CommonResponse;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.course.CreateCourseRequest;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Product;
 import com.stripe.model.Sku;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.brilliant.academe.constant.Constant.*;
 
-public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, CommonResponse> {
+public class CreateCourseHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private DynamoDB dynamoDB;
     private String courseId;
-    private Item item;
+    private Item configItem;
     private String[] attributes = {"cfDistributionName", "stripeSecretKey"};
 
     @Override
-    public CommonResponse handleRequest(CreateCourseRequest createCourseRequest, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         initDynamoDbClient();
         initConfig();
-        return execute(createCourseRequest);
+        return execute(requestEvent);
     }
 
     private void initDynamoDbClient() {
@@ -50,20 +51,51 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
     }
 
     private void initConfig(){
-        item = CommonUtils.getConfigInfo(dynamoDB, attributes);
+        configItem = CommonUtils.getConfigInfo(dynamoDB, attributes);
     }
 
-    public CommonResponse execute(CreateCourseRequest createCourseRequest){
-        String cfDistributionName = (String) item.get("cfDistributionName");
-        persistData(createCourseRequest, cfDistributionName);
+    public APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent requestEvent){
+        String token = requestEvent.getHeaders().get("Authorization");
+        String userId = CommonUtils.getUserFromToken(token);
         CommonResponse response = new CommonResponse();
-        response.setMessage(courseId);
-        return response;
+        response.setMessage(STATUS_FAILED);
+
+        Item instructorItem = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER).getItem("id", userId);
+        if(Objects.nonNull(instructorItem) && Objects.nonNull(instructorItem.get("instructor"))){
+            boolean isInstructor = (Boolean) instructorItem.get("instructor");
+            if(isInstructor){
+                ObjectMapper objectMapper = new ObjectMapper();
+                CreateCourseRequest createCourseRequest = null;
+                try {
+                    createCourseRequest = objectMapper.readValue(requestEvent.getBody(), CreateCourseRequest.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                createCourseRequest.setInstructorId(userId);
+                LinkedHashMap map = (LinkedHashMap) instructorItem.get("instructorDetails");
+                createCourseRequest.setInstructorName((String) map.get("instructorName"));
+                String cfDistributionName = (String) configItem.get("cfDistributionName");
+                persistData(createCourseRequest, cfDistributionName);
+                response.setMessage(STATUS_SUCCESS);
+            }
+        }
+        return constructResponse(response, courseId);
+    }
+
+    private APIGatewayProxyResponseEvent constructResponse(CommonResponse response, String courseId){
+        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
+        responseEvent.setBody(new Gson().toJson(response));
+        if(response.getMessage().equals(STATUS_SUCCESS)){
+            Map<String, String> headers = new HashMap<>();
+            headers.put("id", courseId);
+            responseEvent.setHeaders(headers);
+        }
+        return responseEvent;
     }
 
     private void persistData(CreateCourseRequest createCourseRequest, String cfDistributionName)
             throws ConditionalCheckFailedException {
-
+        System.out.println("cfDistName:"+ cfDistributionName);
         String FORMATTED_COURSE_NAME = createCourseRequest.getCourseName().replaceAll(" ", "+");
         String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/";
         if(createCourseRequest.getSections() != null && createCourseRequest.getSections().size() > 0){
@@ -149,7 +181,7 @@ public class CreateCourseHandler implements RequestHandler<CreateCourseRequest, 
         String image = imageUrl + formattedCourseName+"/"+coverImage;
         System.out.println("Image Location:"+ image);
 
-        Stripe.apiKey = (String) item.get("stripeSecretKey");
+        Stripe.apiKey = (String) configItem.get("stripeSecretKey");
 
         Map<String, Object> productParams = new HashMap<>();
         productParams.put("name", courseName);

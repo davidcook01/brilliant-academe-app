@@ -1,5 +1,6 @@
 package com.brilliant.academe.domain.course;
 
+import com.brilliant.academe.domain.user.Instructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,10 +24,6 @@ public class GetCourseResponse implements Serializable {
 
     private String coverImage;
 
-    private String instructorId;
-
-    private String instructorName;
-
     private Float courseDuration;
 
     private Float courseRating;
@@ -44,6 +41,8 @@ public class GetCourseResponse implements Serializable {
     private Integer totalEnrolled;
 
     private Integer totalRating;
+
+    private Instructor instructorDetails;
 
     public String getCourseId() {
         return courseId;
@@ -83,22 +82,6 @@ public class GetCourseResponse implements Serializable {
 
     public void setCoverImage(String coverImage) {
         this.coverImage = coverImage;
-    }
-
-    public String getInstructorId() {
-        return instructorId;
-    }
-
-    public void setInstructorId(String instructorId) {
-        this.instructorId = instructorId;
-    }
-
-    public String getInstructorName() {
-        return instructorName;
-    }
-
-    public void setInstructorName(String instructorName) {
-        this.instructorName = instructorName;
     }
 
     public Float getCourseDuration() {
@@ -163,5 +146,13 @@ public class GetCourseResponse implements Serializable {
 
     public void setTotalRating(Integer totalRating) {
         this.totalRating = totalRating;
+    }
+
+    public Instructor getInstructorDetails() {
+        return instructorDetails;
+    }
+
+    public void setInstructorDetails(Instructor instructorDetails) {
+        this.instructorDetails = instructorDetails;
     }
 }

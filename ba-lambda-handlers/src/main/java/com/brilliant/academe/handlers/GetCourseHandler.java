@@ -9,13 +9,14 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.course.GetCourseRequest;
 import com.brilliant.academe.domain.course.GetCourseResponse;
+import com.brilliant.academe.domain.user.Instructor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.Objects;
 
-import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE_RESOURCE;
-import static com.brilliant.academe.constant.Constant.REGION;
+import static com.brilliant.academe.constant.Constant.*;
 
 public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCourseResponse> {
 
@@ -37,13 +38,13 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     public GetCourseResponse execute(GetCourseRequest courseRequest){
         String[] attributes = {"id", "courseDuration", "courseLevel", "courseName",
                 "courseType", "coverImage", "description", "discountedPrice",
-                "instructorId", "instructorName", "price", "courseRating", "skuId",
+                "instructorId", "price", "courseRating", "skuId",
                 "totalRating", "totalEnrolled", "detailedDescription"};
-
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseRequest.getCourseId())
                 .withAttributesToGet(attributes);
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
+        String instructorId = (String) item.get("instructorId");
         GetCourseResponse courseResponse = new GetCourseResponse();
         if(Objects.nonNull(item)){
             try {
@@ -52,6 +53,26 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
                 e.printStackTrace();
             }
         }
+        Instructor instructorDetails = getInstructorDetails(instructorId);
+        if(Objects.nonNull(instructorDetails))
+            courseResponse.setInstructorDetails(instructorDetails);
         return courseResponse;
+    }
+
+    public Instructor getInstructorDetails(String userId){
+        String[] attributes = {"instructorDetails"};
+        GetItemSpec itemSpec = new GetItemSpec()
+                .withPrimaryKey("id", userId)
+                .withAttributesToGet(attributes);
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER).getItem(itemSpec);
+        Instructor instructor = null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = new Gson().toJson(item.get("instructorDetails"));
+        try {
+            instructor = objectMapper.readValue(json, Instructor.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return instructor;
     }
 }

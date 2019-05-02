@@ -65,6 +65,10 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
         if(Objects.nonNull(item)){
             if(Objects.nonNull(item.get("instructor"))){
                 boolean isInstructor = (Boolean) item.get("instructor");
+                if(name.equals(Constant.S3_PROFILE_FOLDER)){
+                    key = userId+"_"+key;
+                    isInstructor = true;
+                }
                 if(isInstructor){
                     String bucketName = null;
                     String originPath = null;

@@ -18,6 +18,10 @@ public class Constant {
     public static final String CF_IMAGES_ORIGIN_PATH = "images";
     public static final String CF_VIDEOS_ORIGIN_PATH = "content";
 
+    public static final String S3_PROFILE_FOLDER = "profile";
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+
+
     public static final String STATUS_IN_PROCESS = "INPROCESS";
     public static final String STATUS_FAILED = "FAILED";
     public static final String STATUS_SUCCESS = "SUCCESS";

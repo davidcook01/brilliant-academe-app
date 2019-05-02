@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.user.CognitoPostConfirmationRequest;
+import com.google.gson.Gson;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -30,6 +31,7 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
     }
 
     public String execute(CognitoPostConfirmationRequest cognitoPostConfirmationRequest){
+        System.out.println(new Gson().toJson(cognitoPostConfirmationRequest));
         System.out.println("User Id: "+ cognitoPostConfirmationRequest.getUserName()
                 + "Email:"+cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"));
         persistData(cognitoPostConfirmationRequest);
@@ -41,6 +43,7 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER)
             .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", cognitoPostConfirmationRequest.getUserName())
-                    .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))));
+                    .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))
+                    .withBoolean("instructor", false)));
     }
 }

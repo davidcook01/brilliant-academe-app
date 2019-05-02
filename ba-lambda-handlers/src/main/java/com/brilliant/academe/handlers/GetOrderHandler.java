@@ -7,10 +7,13 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.brilliant.academe.domain.order.GetOrderRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.order.GetOrderResponse;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -18,14 +21,14 @@ import java.util.Objects;
 import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_ORDER;
 import static com.brilliant.academe.constant.Constant.REGION;
 
-public class GetOrderHandler implements RequestHandler<GetOrderRequest, GetOrderResponse> {
+public class GetOrderHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private DynamoDB dynamoDB;
 
     @Override
-    public GetOrderResponse handleRequest(GetOrderRequest getOrderRequest, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         initDynamoDbClient();
-        return execute(getOrderRequest);
+        return execute(requestEvent);
     }
 
     private void initDynamoDbClient() {
@@ -35,12 +38,13 @@ public class GetOrderHandler implements RequestHandler<GetOrderRequest, GetOrder
         dynamoDB = new DynamoDB(client);
     }
 
-    public GetOrderResponse execute(GetOrderRequest orderRequest){
-        String userId = CommonUtils.getUserFromToken(orderRequest.getToken());
+    public APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent requestEvent){
+        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
+        String userId = CommonUtils.getUserFromToken(token);
+        String orderId = requestEvent.getPathParameters().get("orderId");
         String[] attributes = {"id", "orderStatus", "transactionId", "userId"};
-
         GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", orderRequest.getOrderId())
+                .withPrimaryKey("id", orderId)
                 .withAttributesToGet(attributes);
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER).getItem(itemSpec);
         GetOrderResponse orderResponse = new GetOrderResponse();
@@ -51,6 +55,7 @@ public class GetOrderHandler implements RequestHandler<GetOrderRequest, GetOrder
                 e.printStackTrace();
             }
         }
-        return orderResponse;
+        return new APIGatewayProxyResponseEvent()
+                .withBody(new Gson().toJson(orderResponse));
     }
 }
