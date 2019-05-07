@@ -60,7 +60,7 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     }
 
     public Instructor getInstructorDetails(String userId){
-        String[] attributes = {"instructorDetails"};
+        String[] attributes = {"fullName", "profileImage", "instructorDetails"};
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", userId)
                 .withAttributesToGet(attributes);
@@ -73,6 +73,8 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
         } catch (IOException e) {
             e.printStackTrace();
         }
+        instructor.setInstructorName((String) item.get("fullName"));
+        instructor.setProfileImage((String) item.get("profileImage"));
         return instructor;
     }
 }

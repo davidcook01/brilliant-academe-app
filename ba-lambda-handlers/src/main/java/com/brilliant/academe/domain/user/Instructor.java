@@ -12,6 +12,7 @@ public class Instructor implements Serializable {
     private String designation;
     private String detailedDescription;
     private String profileImage;
+    private String instructorName;
 
     public String getDesignation() {
         return designation;
@@ -35,5 +36,13 @@ public class Instructor implements Serializable {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getInstructorName() {
+        return instructorName;
+    }
+
+    public void setInstructorName(String instructorName) {
+        this.instructorName = instructorName;
     }
 }

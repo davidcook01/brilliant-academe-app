@@ -72,8 +72,7 @@ public class CreateCourseHandler implements RequestHandler<APIGatewayProxyReques
                     e.printStackTrace();
                 }
                 createCourseRequest.setInstructorId(userId);
-                LinkedHashMap map = (LinkedHashMap) instructorItem.get("instructorDetails");
-                createCourseRequest.setInstructorName((String) map.get("instructorName"));
+                createCourseRequest.setInstructorName((String) instructorItem.get("fullName"));
                 String cfDistributionName = (String) configItem.get("cfDistributionName");
                 persistData(createCourseRequest, cfDistributionName);
                 response.setMessage(STATUS_SUCCESS);

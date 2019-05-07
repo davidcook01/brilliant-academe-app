@@ -32,18 +32,21 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
 
     public String execute(CognitoPostConfirmationRequest cognitoPostConfirmationRequest){
         System.out.println(new Gson().toJson(cognitoPostConfirmationRequest));
-        System.out.println("User Id: "+ cognitoPostConfirmationRequest.getUserName()
-                + "Email:"+cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"));
         persistData(cognitoPostConfirmationRequest);
         return STATUS_SUCCESS;
     }
 
     private void persistData(CognitoPostConfirmationRequest cognitoPostConfirmationRequest)
             throws ConditionalCheckFailedException {
+        boolean isInstructor = false;
+        if(cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("custom:instructor").equals("Y")){
+            isInstructor = true;
+        }
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER)
             .putItem(new PutItemSpec().withItem(new Item()
                     .withString("id", cognitoPostConfirmationRequest.getUserName())
                     .withString("email", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("email"))
-                    .withBoolean("instructor", false)));
+                    .withString("fullName", cognitoPostConfirmationRequest.getRequest().getUserAttributes().get("name"))
+                    .withBoolean("instructor", isInstructor)));
     }
 }
