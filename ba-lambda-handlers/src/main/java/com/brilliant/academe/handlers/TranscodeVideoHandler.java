@@ -25,7 +25,7 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
     private AmazonElasticTranscoder amazonElasticTranscoder;
     private DynamoDB dynamoDB;
     private Item item;
-    private String[] attributes = {"transcoderPipelineId"};
+    private String[] attributes = {"transcoderPipelineId", "transcoderPresetId" , "transcoderSegmentDuration"};
 
     @Override
     public String handleRequest(S3Event event, Context context) {
@@ -53,7 +53,6 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
     public String execute(S3Event event, Context context){
         System.out.println("Json: "+new Gson().toJson(event));
         context.getLogger().log("Received event: " + event);
-        // Get the object from the event and show its content type
         String bucket = event.getRecords().get(0).getS3().getBucket().getName();
         String key = event.getRecords().get(0).getS3().getObject().getKey();
         System.out.println("Bucket:"+ bucket);
@@ -61,35 +60,24 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
         try {
             key = key.replace("+", " ");
             JobInput input = new JobInput().withKey(key);
-            /*String[] fileName = key.split("\\.");
-            String outputKey = fileName[fileName.length];
-            //String outputKey = key.substring(0, key.lastIndexOf('/'));*/
-
             String[] output = key.split("/");
             String outputKey = output[output.length-1].split("\\.")[0];
             System.out.println(outputKey);
             System.out.println("Output Key:"+ outputKey);
-            String folderPrefix = "videos/"+output[1];
+            String folderPrefix = "content/"+output[1];
 
-            // Setup the job output using the provided input key to generate an output key.
             List<CreateJobOutput> outputs = new ArrayList<CreateJobOutput>();
 
-            CreateJobOutput output1 = new CreateJobOutput().withKey(outputKey + "_1080p")
-                    .withPresetId("1550770439115-c9e06e")
-                    .withSegmentDuration("60");
+            String transcoderPresetId = (String) item.get("transcoderPresetId");
+            String transcoderSegmentDuration = (String) item.get("transcoderSegmentDuration");
+
+            String jobOutputKey = outputKey + "_hls";
+            System.out.println("Job Output Key:" + jobOutputKey);
+            CreateJobOutput output1 = new CreateJobOutput().withKey(jobOutputKey)
+                    .withPresetId(transcoderPresetId)
+                    .withSegmentDuration(transcoderSegmentDuration);
             outputs.add(output1);
 
-            /*CreateJobOutput output2 = new CreateJobOutput().withKey(outputKey + "_720p")
-                    .withPresetId("1550770524254-cgtysk")
-                    .withSegmentDuration("60");
-            outputs.add(output2);
-
-            CreateJobOutput output3 = new CreateJobOutput().withKey(outputKey + "_360p")
-                    .withPresetId("1550770612124-5h1nnk").
-                            withSegmentDuration("60");
-            outputs.add(output3);*/
-
-            // Create a job on the specified pipeline and return the job ID.
             String transcoderPipelineId = (String) item.get("transcoderPipelineId");
             CreateJobRequest createJobRequest = new CreateJobRequest().withPipelineId(transcoderPipelineId)
                     .withOutputKeyPrefix(folderPrefix + "/").withInput(input).withOutputs(outputs);
@@ -97,7 +85,6 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
 
             return amazonElasticTranscoder.createJob(createJobRequest).getJob().getId();
 
-            // return contentType;
         } catch (Exception e) {
             e.printStackTrace();
             context.getLogger().log(String.format("Error getting object %s from bucket %s. Make sure they exist and"
