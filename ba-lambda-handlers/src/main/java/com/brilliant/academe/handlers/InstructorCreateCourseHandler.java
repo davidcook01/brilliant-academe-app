@@ -31,6 +31,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
     private static final String TYPE_MATERIAL = "material";
 
     private static final String OPERATION_GET = "get";
+    private static final String OPERATION_SUBMIT = "submit";
     private static final String OPERATION_CREATE = "create";
     private static final String OPERATION_UPDATE = "update";
     private static final String OPERATION_DETETE = "delete";
@@ -127,6 +128,9 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         }
         if(operation.equals(OPERATION_GET)){
             return getCourse(course.getCourseId());
+        }
+        if(operation.equals(OPERATION_SUBMIT)){
+            return submitCourse(course.getCourseId());
         }
         return response;
     }
@@ -244,6 +248,20 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         }
         InstructorCourseResponse response = new InstructorCourseResponse();
         response.setCourse(course);
+        return response;
+    }
+
+    private InstructorCourseResponse submitCourse(String courseId){
+        InstructorCourseResponse response = new InstructorCourseResponse();
+        response.setMessage(STATUS_FAILED);
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey("id", courseId)
+                .withUpdateExpression("set submitted = :submitted, modifiedDate = :modifiedDate")
+                .withValueMap(new ValueMap()
+                        .withString(":submitted", STATUS_YES)
+                        .withString(":modifiedDate", CommonUtils.getDateTime()));
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpec);
+        response.setMessage(STATUS_SUCCESS);
         return response;
     }
 
