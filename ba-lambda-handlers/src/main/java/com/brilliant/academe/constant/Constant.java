@@ -33,6 +33,11 @@ public class Constant {
     public static final String CONFIG_ID = "1";
     public static final String LOOKUP_ID = "1";
 
+    public static final String STATUS_NO = "N";
+    public static final String STATUS_YES = "Y";
+
+    public static final String HLS_M3U8_FORMAT = "_hls.m3u8";
+
     public static final String CLOUDFRONT_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----\n" +
             "MIIEowIBAAKCAQEAxmyE8Az2yR6DPg3Ap5vxMBK7WEMnFud7xrsftFnU7KzqXiGB\n" +
             "lw0FovLynbJao6UvLELPbE9cWbINNuHV2dLOt8p1xtUKIkelO+xFX2MJ01JikHx0\n" +

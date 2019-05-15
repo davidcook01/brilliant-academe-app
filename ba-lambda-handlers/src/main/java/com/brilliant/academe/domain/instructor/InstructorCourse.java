@@ -1,17 +1,17 @@
-package com.brilliant.academe.domain.filter;
+package com.brilliant.academe.domain.instructor;
 
-import com.brilliant.academe.constant.Constant;
+import com.brilliant.academe.domain.course.CourseCategory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FilterCourseInfo implements Serializable {
+public class InstructorCourse implements Serializable {
 
     @JsonProperty("id")
     private String courseId;
@@ -21,17 +21,15 @@ public class FilterCourseInfo implements Serializable {
     @JsonProperty("description")
     private String courseDescription;
 
-    private String coverImage;
+    private String detailedDescription;
+
+    private List<CourseCategory> courseCategories;
 
     private String instructorId;
 
     private String instructorName;
 
-    private Float courseDuration;
-
-    private Float courseRating;
-
-    private String courseType;
+    private String courseLevel;
 
     @JsonProperty("price")
     private BigDecimal coursePrice;
@@ -39,11 +37,12 @@ public class FilterCourseInfo implements Serializable {
     @JsonProperty("discountedPrice")
     private BigDecimal discountedCoursePrice;
 
-    private Integer totalEnrolled;
+    private String courseType;
 
-    private Integer totalRating;
+    private String coverImage;
 
-    private String reviewed = Constant.STATUS_NO;
+    @JsonProperty("resources")
+    private List<InstructorCourseSection> sections;
 
     public String getCourseId() {
         return courseId;
@@ -69,12 +68,20 @@ public class FilterCourseInfo implements Serializable {
         this.courseDescription = courseDescription;
     }
 
-    public String getCoverImage() {
-        return coverImage;
+    public String getDetailedDescription() {
+        return detailedDescription;
     }
 
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
+    public void setDetailedDescription(String detailedDescription) {
+        this.detailedDescription = detailedDescription;
+    }
+
+    public List<CourseCategory> getCourseCategories() {
+        return courseCategories;
+    }
+
+    public void setCourseCategories(List<CourseCategory> courseCategories) {
+        this.courseCategories = courseCategories;
     }
 
     public String getInstructorId() {
@@ -93,28 +100,12 @@ public class FilterCourseInfo implements Serializable {
         this.instructorName = instructorName;
     }
 
-    public Float getCourseDuration() {
-        return courseDuration;
+    public String getCourseLevel() {
+        return courseLevel;
     }
 
-    public void setCourseDuration(Float courseDuration) {
-        this.courseDuration = courseDuration;
-    }
-
-    public Float getCourseRating() {
-        return courseRating;
-    }
-
-    public void setCourseRating(Float courseRating) {
-        this.courseRating = courseRating;
-    }
-
-    public String getCourseType() {
-        return courseType;
-    }
-
-    public void setCourseType(String courseType) {
-        this.courseType = courseType;
+    public void setCourseLevel(String courseLevel) {
+        this.courseLevel = courseLevel;
     }
 
     public BigDecimal getCoursePrice() {
@@ -133,40 +124,27 @@ public class FilterCourseInfo implements Serializable {
         this.discountedCoursePrice = discountedCoursePrice;
     }
 
-    public Integer getTotalEnrolled() {
-        return totalEnrolled;
+    public String getCourseType() {
+        return courseType;
     }
 
-    public void setTotalEnrolled(Integer totalEnrolled) {
-        this.totalEnrolled = totalEnrolled;
+    public void setCourseType(String courseType) {
+        this.courseType = courseType;
     }
 
-    public Integer getTotalRating() {
-        return totalRating;
+    public String getCoverImage() {
+        return coverImage;
     }
 
-    public void setTotalRating(Integer totalRating) {
-        this.totalRating = totalRating;
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 
-    public String getReviewed() {
-        return reviewed;
+    public List<InstructorCourseSection> getSections() {
+        return sections;
     }
 
-    public void setReviewed(String reviewed) {
-        this.reviewed = reviewed;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FilterCourseInfo that = (FilterCourseInfo) o;
-        return courseId.equals(that.courseId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(courseId);
+    public void setSections(List<InstructorCourseSection> sections) {
+        this.sections = sections;
     }
 }

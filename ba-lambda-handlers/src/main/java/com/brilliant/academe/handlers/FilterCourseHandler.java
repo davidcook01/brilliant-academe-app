@@ -19,11 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.brilliant.academe.constant.Constant.DYNAMODB_TABLE_NAME_COURSE;
-import static com.brilliant.academe.constant.Constant.REGION;
+import static com.brilliant.academe.constant.Constant.*;
 
 public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, FilterCourseResponse> {
 
@@ -79,7 +77,7 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
                     }
                     filterExpression.append(")");
                 }
-
+                System.out.println("FilterExpression:" + filterExpression);
                 QuerySpec querySpec = new QuerySpec();
                 String expression = ""+ filterName+" = :v_"+filterName;
                 if(isFilterPresent){
@@ -109,15 +107,14 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
                     e.printStackTrace();
                 }
             }
-
-            List<FilterCourseInfo> distinctCourses = filterCourseInfos.stream()
-                    .collect(Collectors.collectingAndThen(
-                            Collectors.toMap(c -> Arrays.asList(c.getCourseId()),
-                                    Function.identity(), (a, b) -> a, LinkedHashMap::new),
-                            m -> new ArrayList<>(m.values())));
-
-            response.setCourses(distinctCourses);
+            response.setCourses(filterUniqueAndReviewedCourses(filterCourseInfos));
         }
         return response;
+    }
+
+    private List<FilterCourseInfo> filterUniqueAndReviewedCourses(List<FilterCourseInfo> filterCourseInfos){
+        Set<FilterCourseInfo> uniqueCourses = new HashSet<>(filterCourseInfos);
+        List<FilterCourseInfo> courses = new ArrayList<>(uniqueCourses);
+        return courses.stream().filter(c->c.getReviewed().equals(STATUS_YES)).collect(Collectors.toList());
     }
 }
