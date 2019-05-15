@@ -16,8 +16,14 @@ import com.brilliant.academe.domain.instructor.*;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Product;
+import com.stripe.model.Sku;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static com.brilliant.academe.constant.Constant.*;
@@ -42,7 +48,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
 
     private Item configItem;
 
-    private String[] attributes = {"cfDistributionName"};
+    private String[] attributes = {"cfDistributionName", "stripeSecretKey"};
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -81,6 +87,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         boolean isInstructor = checkIfInstructor(token);
         InstructorCourseResponse response = new InstructorCourseResponse();
         if(isInstructor){
+            System.out.println(new Gson().toJson(request));
             response = executeRequest(request);
         }
         return response;
@@ -130,6 +137,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             return getCourse(course.getCourseId());
         }
         if(operation.equals(OPERATION_SUBMIT)){
+            initConfig();
             return submitCourse(course.getCourseId());
         }
         return response;
@@ -237,10 +245,10 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 .withPrimaryKey("id", courseId)
                 .withAttributesToGet(attributes);
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        InstructorCourse course = new InstructorCourse();
+        InstructorCourseResponseInfo course = new InstructorCourseResponseInfo();
         if(Objects.nonNull(item)){
             try {
-                course = new ObjectMapper().readValue(item.toJSON(), InstructorCourse.class);
+                course = new ObjectMapper().readValue(item.toJSON(), InstructorCourseResponseInfo.class);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -254,15 +262,77 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
     private InstructorCourseResponse submitCourse(String courseId){
         InstructorCourseResponse response = new InstructorCourseResponse();
         response.setMessage(STATUS_FAILED);
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+
+        GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseId)
-                .withUpdateExpression("set submitted = :submitted, modifiedDate = :modifiedDate")
+                .withAttributesToGet("id", "courseName", "coverImage", "discountedPrice");
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
+        String courseName = (String) item.get("courseName");
+        BigDecimal amount = (BigDecimal) item.get("discountedPrice");
+        String coverImage = (String) item.get("coverImage");
+
+        String skuId = createProductAndSkuInStripe(courseName, amount, coverImage);
+        boolean isSubmit = updateSkuIdAndSubmit(courseId, skuId);
+        if(isSubmit) {
+            response.setMessage(STATUS_SUCCESS);
+        }
+        return response;
+    }
+
+    private String createProductAndSkuInStripe(String courseName, BigDecimal amount, String coverImageUrl){
+        Float centAmount = amount.floatValue()*100;
+        Integer centAmountRounded = centAmount.intValue();
+
+        Stripe.apiKey = (String) configItem.get("stripeSecretKey");
+
+        Map<String, Object> productParams = new HashMap<>();
+        productParams.put("name", courseName);
+        productParams.put("type", "good");
+        ArrayList attributes = new ArrayList<>();
+        attributes.add("name");
+        productParams.put("attributes", attributes);
+        Product product = null;
+        try {
+            product = Product.create(productParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Product Id:"+ product.getId());
+
+        Map<String, Object> skuParams = new HashMap<>();
+        skuParams.put("product", product.getId());
+        skuParams.put("price", centAmountRounded);
+        skuParams.put("currency", "usd");
+        Map<String, Object> attributesParams = new HashMap<>();
+        attributesParams.put("name", courseName);
+        skuParams.put("attributes", attributesParams);
+        Map<String, Object> inventoryParams = new HashMap<>();
+        inventoryParams.put("type", "infinite");
+        skuParams.put("inventory", inventoryParams);
+        skuParams.put("image", coverImageUrl);
+
+        System.out.println("Image Set in SKU:"+skuParams.get("image"));
+
+        Sku sku = null;
+        try {
+            sku = Sku.create(skuParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+        System.out.println("SKUID:"+ sku.getId());
+        return sku.getId();
+    }
+
+    private boolean updateSkuIdAndSubmit(String courseId, String skuId){
+        UpdateItemSpec updateItemSpecCourse = new UpdateItemSpec()
+                .withPrimaryKey("id", courseId)
+                .withUpdateExpression("set skuId = :skuId, modifiedDate = :modifiedDate, submitted = :submitted")
                 .withValueMap(new ValueMap()
+                        .withString(":skuId", skuId)
                         .withString(":submitted", STATUS_YES)
                         .withString(":modifiedDate", CommonUtils.getDateTime()));
-        dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpec);
-        response.setMessage(STATUS_SUCCESS);
-        return response;
+        dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpecCourse);
+        return true;
     }
 
     private InstructorCourseResponse executeImage(String operation, InstructorCourse course){
@@ -311,17 +381,17 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         return updateItemSpec;
     }
 
-    private InstructorCourse getCourseDetails(String courseId){
+    private InstructorCourseResponseInfo getCourseDetails(String courseId){
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseId)
                 .withAttributesToGet("id", "resources");
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
 
-        InstructorCourse courseDetails = new InstructorCourse();
+        InstructorCourseResponseInfo courseDetails = new InstructorCourseResponseInfo();
         if(Objects.nonNull(item)){
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                courseDetails = objectMapper.readValue(item.toJSON(), InstructorCourse.class);
+                courseDetails = objectMapper.readValue(item.toJSON(), InstructorCourseResponseInfo.class);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -351,7 +421,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         response.setMessage(STATUS_FAILED);
         if(operation.equals(OPERATION_CREATE)) {
             String sectionId = UUID.randomUUID().toString();
-            InstructorCourse courseDetails = getCourseDetails(course.getCourseId());
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             if(Objects.isNull(courseDetails.getSections()) || courseDetails.getSections().size() == 0){
                 courseDetails.setSections(new ArrayList<>());
             }
@@ -363,7 +433,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             response.setId(sectionId);
         }
         if(operation.equals(OPERATION_GET)) {
-            InstructorCourse courseDetails = getCourseDetails(course.getCourseId());
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             response.setSections(courseDetails.getSections());
             response.setMessage(STATUS_SUCCESS);
         }
@@ -379,7 +449,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             response.setId(lectureId);
         }
         if(operation.equals(OPERATION_UPDATE)) {
-            InstructorCourse courseDetails = getCourseDetails(course.getCourseId());
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             String sectionId = course.getSections().get(0).getSectionId();
             InstructorCourseSection courseSection = courseDetails.getSections().stream()
                     .filter(cs -> sectionId.equals(cs.getSectionId()))
@@ -412,7 +482,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             response.setId(materialId);
         }
         if(operation.equals(OPERATION_UPDATE)) {
-            InstructorCourse courseDetails = getCourseDetails(course.getCourseId());
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             String sectionId = course.getSections().get(0).getSectionId();
             String lectureId = course.getSections().get(0).getLectures().get(0).getLectureId();
             InstructorCourseSection courseSection = courseDetails.getSections().stream()

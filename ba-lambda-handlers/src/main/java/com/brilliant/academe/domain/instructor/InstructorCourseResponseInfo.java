@@ -1,25 +1,56 @@
-package com.brilliant.academe.domain.course;
+package com.brilliant.academe.domain.instructor;
+
+import com.brilliant.academe.domain.course.CourseCategory;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class CreateCourseRequest implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class InstructorCourseResponseInfo implements Serializable {
+
+    @JsonProperty("id")
+    private String courseId;
 
     private String courseName;
+
+    @JsonProperty("description")
     private String courseDescription;
+
     private String detailedDescription;
-    private String coverImage;
+
     private List<CourseCategory> courseCategories;
+
     private String instructorId;
+
     private String instructorName;
+
     private String courseLevel;
+
+    @JsonProperty("price")
     private BigDecimal coursePrice;
+
+    @JsonProperty("discountedPrice")
     private BigDecimal discountedCoursePrice;
-    private Float courseDuration;
-    private Float courseRating;
+
     private String courseType;
-    private List<CourseSection> sections;
+
+    private String coverImage;
+
+    @JsonProperty("resources")
+    private List<InstructorCourseSection> sections;
+
+    public String getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
+    }
 
     public String getCourseName() {
         return courseName;
@@ -43,14 +74,6 @@ public class CreateCourseRequest implements Serializable {
 
     public void setDetailedDescription(String detailedDescription) {
         this.detailedDescription = detailedDescription;
-    }
-
-    public String getCoverImage() {
-        return coverImage;
-    }
-
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
     }
 
     public List<CourseCategory> getCourseCategories() {
@@ -101,22 +124,6 @@ public class CreateCourseRequest implements Serializable {
         this.discountedCoursePrice = discountedCoursePrice;
     }
 
-    public Float getCourseDuration() {
-        return courseDuration;
-    }
-
-    public void setCourseDuration(Float courseDuration) {
-        this.courseDuration = courseDuration;
-    }
-
-    public Float getCourseRating() {
-        return courseRating;
-    }
-
-    public void setCourseRating(Float courseRating) {
-        this.courseRating = courseRating;
-    }
-
     public String getCourseType() {
         return courseType;
     }
@@ -125,11 +132,19 @@ public class CreateCourseRequest implements Serializable {
         this.courseType = courseType;
     }
 
-    public List<CourseSection> getSections() {
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public List<InstructorCourseSection> getSections() {
         return sections;
     }
 
-    public void setSections(List<CourseSection> sections) {
+    public void setSections(List<InstructorCourseSection> sections) {
         this.sections = sections;
     }
 }

@@ -3,7 +3,6 @@ package com.brilliant.academe.domain.instructor;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -13,12 +12,10 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InstructorCourse implements Serializable {
 
-    @JsonProperty("id")
     private String courseId;
 
     private String courseName;
 
-    @JsonProperty("description")
     private String courseDescription;
 
     private String detailedDescription;
@@ -31,17 +28,14 @@ public class InstructorCourse implements Serializable {
 
     private String courseLevel;
 
-    @JsonProperty("price")
     private BigDecimal coursePrice;
 
-    @JsonProperty("discountedPrice")
     private BigDecimal discountedCoursePrice;
 
     private String courseType;
 
     private String coverImage;
 
-    @JsonProperty("resources")
     private List<InstructorCourseSection> sections;
 
     public String getCourseId() {

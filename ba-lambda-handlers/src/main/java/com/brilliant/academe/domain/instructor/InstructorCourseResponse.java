@@ -12,7 +12,7 @@ public class InstructorCourseResponse implements Serializable {
 
     private String message;
     private String id;
-    private InstructorCourse course;
+    private InstructorCourseResponseInfo course;
     private List<InstructorCourseSection> sections;
 
     public String getId() {
@@ -31,11 +31,11 @@ public class InstructorCourseResponse implements Serializable {
         this.message = message;
     }
 
-    public InstructorCourse getCourse() {
+    public InstructorCourseResponseInfo getCourse() {
         return course;
     }
 
-    public void setCourse(InstructorCourse course) {
+    public void setCourse(InstructorCourseResponseInfo course) {
         this.course = course;
     }
 
