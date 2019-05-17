@@ -94,7 +94,7 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
 
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
         responseEvent.setBody(new Gson().toJson(commonResponse));
-        return responseEvent;
+        return CommonUtils.setCorsHeaders(responseEvent);
     }
 
     private String getSignedUrl(String bucketName, String originPath, String name, String key){

@@ -69,7 +69,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return responseEvent;
+        return CommonUtils.setCorsHeaders(responseEvent);
     }
 
     private void initDynamoDbClient() {

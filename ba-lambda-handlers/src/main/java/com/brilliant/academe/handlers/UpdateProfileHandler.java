@@ -56,7 +56,7 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
         }
 
         String cfDistributionName = (String) item.get("cfDistributionName");
-        String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/profile/" + userId+"_"+instructorMapperDetails.getProfileImage();
+        String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/profile/" + instructorMapperDetails.getProfileImage();
 
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setMessage(STATUS_FAILED);

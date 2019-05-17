@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,17 +49,17 @@ public class CommonUtils {
         Integer expirySeconds = expirySecondsInBD.intValue();
         String cloudFrontKeyPairId = (String) item.get("cfKeyPairId");
         String cloudFrontPrivateKey = (String) item.get("cfPrivateKey");
-        return generateSignedUrl(expirySeconds, cloudFrontDistributionName, s3ObjectKey, cloudFrontKeyPairId);
+        return generateSignedUrl(expirySeconds, cloudFrontDistributionName, s3ObjectKey, cloudFrontKeyPairId, cloudFrontPrivateKey);
     }
 
     private static String generateSignedUrl(Integer expirySeconds, String cloudFrontDistributionName,
-                                           String s3ObjectKey, String cloudFrontKeyPairId){
+                                           String s3ObjectKey, String cloudFrontKeyPairId, String cloudFrontPrivateKey){
         File cloudFrontPrivateKeyFile = null;
         BufferedWriter bw = null;
         try {
             cloudFrontPrivateKeyFile = File.createTempFile("rsa_pk",".pem");
             bw = new BufferedWriter(new FileWriter(cloudFrontPrivateKeyFile));
-            bw.write(CLOUDFRONT_PRIVATE_KEY);
+            bw.write(cloudFrontPrivateKey);
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -181,4 +182,12 @@ public class CommonUtils {
                 .withAttributesToGet(attributes);
         return dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_CONFIG).getItem(itemSpec);
     }
+
+    public static APIGatewayProxyResponseEvent setCorsHeaders(APIGatewayProxyResponseEvent responseEvent){
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Access-Control-Allow-Origin", "*");
+        responseEvent.setHeaders(headers);
+        return responseEvent;
+    }
+
 }
