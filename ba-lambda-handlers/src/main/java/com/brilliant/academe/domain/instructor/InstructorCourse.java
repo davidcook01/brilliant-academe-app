@@ -36,6 +36,8 @@ public class InstructorCourse implements Serializable {
 
     private String coverImage;
 
+    private String tags;
+
     private List<InstructorCourseSection> sections;
 
     public String getCourseId() {
@@ -132,6 +134,14 @@ public class InstructorCourse implements Serializable {
 
     public void setCoverImage(String coverImage) {
         this.coverImage = coverImage;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 
     public List<InstructorCourseSection> getSections() {

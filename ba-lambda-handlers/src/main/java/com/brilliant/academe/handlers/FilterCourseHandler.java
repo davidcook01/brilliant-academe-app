@@ -91,12 +91,21 @@ public class FilterCourseHandler implements RequestHandler<FilterCourseRequest, 
 
                 items = index.query(querySpec);
             }else{
-                ScanSpec scanSpec = new ScanSpec()
-                        .withFilterExpression("contains( "+filterName+" , :v_"+filterName+")")
-                        .withValueMap(new ValueMap()
-                                .withString(":v_"+filterName+"",filterValue));
-
-                items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).scan(scanSpec);
+                ScanSpec scanSpec = null;
+                if(filterName.equals("courseName")){
+                    scanSpec = new ScanSpec()
+                            .withFilterExpression("contains( tags , :v_"+filterName+")")
+                            .withValueMap(new ValueMap()
+                                    .withString(":v_"+filterName+"",filterValue));
+                }else if(filterName.equals("courseRating")){
+                    Float rating = new Float(filterValue);
+                    scanSpec = new ScanSpec()
+                            .withFilterExpression(""+filterName+" > :rating")
+                            .withValueMap(new ValueMap()
+                                    .withNumber(":rating", rating));
+                }
+                System.out.println(scanSpec.getFilterExpression());
+                items = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).scan(scanSpec);
             }
 
             Iterator<Item> iter = items.iterator();

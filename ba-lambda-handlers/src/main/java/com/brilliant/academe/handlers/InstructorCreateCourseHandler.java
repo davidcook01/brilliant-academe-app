@@ -162,6 +162,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                         .withString("courseType", course.getCourseType())
                         .withString("createdDate", CommonUtils.getDateTime())
                         .withString("detailedDescription", course.getDetailedDescription())
+                        .withString("tags", course.getTags())
                         .withString("submitted", STATUS_NO)
                         .withString("reviewed", STATUS_NO)));
 
@@ -195,7 +196,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 .withUpdateExpression("set price = :price, discountedPrice=:discountedPrice, " +
                         "courseName = :courseName, description = :description, " +
                         "courseLevel = :courseLevel, courseType = :courseType, " +
-                        "detailedDescription = :detailedDescription, modifiedDate = :modifiedDate")
+                        "detailedDescription = :detailedDescription, tags = :tags, modifiedDate = :modifiedDate")
                 .withValueMap(new ValueMap()
                         .withNumber(":price", course.getCoursePrice())
                         .withNumber(":discountedPrice", course.getDiscountedCoursePrice())
@@ -205,6 +206,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                         .withString(":courseType", course.getCourseType())
                         .withString(":detailedDescription", course.getDetailedDescription())
                         .withString(":courseType", course.getCourseType())
+                        .withString(":tags", course.getTags())
                         .withString(":modifiedDate", CommonUtils.getDateTime()));
 
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpec);
@@ -240,7 +242,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
     private InstructorCourseResponse getCourse(String courseId){
         String[] attributes = {"id", "courseLevel", "courseName",
                 "courseType", "coverImage", "description", "discountedPrice",
-                "price", "detailedDescription"};
+                "price", "detailedDescription", "tags"};
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseId)
                 .withAttributesToGet(attributes);
