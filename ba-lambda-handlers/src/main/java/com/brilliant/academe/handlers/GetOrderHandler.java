@@ -55,7 +55,8 @@ public class GetOrderHandler implements RequestHandler<APIGatewayProxyRequestEve
                 e.printStackTrace();
             }
         }
-        return new APIGatewayProxyResponseEvent()
+        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                 .withBody(new Gson().toJson(orderResponse));
+        return CommonUtils.setCorsHeaders(responseEvent);
     }
 }
