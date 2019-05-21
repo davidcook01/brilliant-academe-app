@@ -49,7 +49,7 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
     }
 
     public APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent requestEvent){
-        String token = requestEvent.getHeaders().get("Authorization");
+        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
         String key = requestEvent.getQueryStringParameters().get("key");
         String name = requestEvent.getQueryStringParameters().get("name");
         String type = requestEvent.getQueryStringParameters().get("type");
@@ -66,7 +66,7 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
             if(Objects.nonNull(item.get("instructor"))){
                 boolean isInstructor = (Boolean) item.get("instructor");
                 if(name.equals(Constant.S3_PROFILE_FOLDER)){
-                    key = userId+"_"+key;
+                    key = userId+key;
                     isInstructor = true;
                 }
                 if(isInstructor){

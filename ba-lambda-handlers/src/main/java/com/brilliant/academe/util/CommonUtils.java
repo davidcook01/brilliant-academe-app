@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
+import com.brilliant.academe.domain.user.Instructor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
@@ -188,6 +189,27 @@ public class CommonUtils {
         headers.put("Access-Control-Allow-Origin", "*");
         responseEvent.setHeaders(headers);
         return responseEvent;
+    }
+
+    public static Instructor getInstructorDetails(String userId, DynamoDB dynamoDB){
+        String[] attributes = {"fullName", "profileImage", "instructorDetails"};
+        GetItemSpec itemSpec = new GetItemSpec()
+                .withPrimaryKey("id", userId)
+                .withAttributesToGet(attributes);
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER).getItem(itemSpec);
+        Instructor instructor = null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = new Gson().toJson(item.get("instructorDetails"));
+        try {
+            instructor = objectMapper.readValue(json, Instructor.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(Objects.nonNull(instructor)) {
+            instructor.setInstructorName((String) item.get("fullName"));
+            instructor.setProfileImage((String) item.get("profileImage"));
+        }
+        return instructor;
     }
 
 }

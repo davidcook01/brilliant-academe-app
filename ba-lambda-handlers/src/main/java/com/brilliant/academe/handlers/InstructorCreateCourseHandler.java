@@ -11,6 +11,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.instructor.*;
 import com.brilliant.academe.util.CommonUtils;
@@ -61,7 +62,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String token = requestEvent.getHeaders().get("Authorization");
+        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
         InstructorCourseResponse response = execute(token, request);
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
         try {
@@ -87,7 +88,6 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         boolean isInstructor = checkIfInstructor(token);
         InstructorCourseResponse response = new InstructorCourseResponse();
         if(isInstructor){
-            System.out.println(new Gson().toJson(request));
             response = executeRequest(request);
         }
         return response;

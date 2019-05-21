@@ -45,7 +45,7 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
     }
 
     private APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent event){
-        String token = event.getHeaders().get("Authorization");
+        String token = event.getHeaders().get(HEADER_AUTHORIZATION);
         String userId = CommonUtils.getUserFromToken(token);
         Instructor instructorMapperDetails = null;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -56,7 +56,7 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
         }
 
         String cfDistributionName = (String) item.get("cfDistributionName");
-        String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/profile/" + instructorMapperDetails.getProfileImage();
+        String CF_IMAGE_URL = "https://" + cfDistributionName + "/" + CF_IMAGES_ORIGIN_PATH +"/profile/" + userId+instructorMapperDetails.getProfileImage();
 
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setMessage(STATUS_FAILED);
@@ -72,7 +72,7 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
 
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
                         .withBody(new Gson().toJson(commonResponse));
-        return responseEvent;
+        return CommonUtils.setCorsHeaders(responseEvent);
     }
 
     private String getInstructorDetails(Instructor instructorMapperDetails){

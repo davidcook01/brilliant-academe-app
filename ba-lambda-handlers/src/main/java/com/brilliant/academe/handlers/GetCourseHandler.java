@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.course.GetCourseRequest;
 import com.brilliant.academe.domain.course.GetCourseResponse;
 import com.brilliant.academe.domain.user.Instructor;
+import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
@@ -36,45 +37,29 @@ public class GetCourseHandler implements RequestHandler<GetCourseRequest, GetCou
     }
 
     public GetCourseResponse execute(GetCourseRequest courseRequest){
+        GetCourseResponse courseResponse = new GetCourseResponse();
         String[] attributes = {"id", "courseDuration", "courseLevel", "courseName",
                 "courseType", "coverImage", "description", "discountedPrice",
                 "instructorId", "price", "courseRating", "skuId",
-                "totalRating", "totalEnrolled", "detailedDescription"};
+                "totalRating", "totalEnrolled", "detailedDescription", "reviewed"};
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", courseRequest.getCourseId())
                 .withAttributesToGet(attributes);
         Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem(itemSpec);
-        String instructorId = (String) item.get("instructorId");
-        GetCourseResponse courseResponse = new GetCourseResponse();
-        if(Objects.nonNull(item)){
-            try {
-                courseResponse = new ObjectMapper().readValue(item.toJSON(), GetCourseResponse.class);
-            } catch (IOException e) {
-                e.printStackTrace();
+        if(Objects.nonNull(item) && Objects.nonNull(item.get("reviewed")) && item.get("reviewed").equals(STATUS_YES)){
+            String instructorId = (String) item.get("instructorId");
+            if(Objects.nonNull(item)){
+                try {
+                    courseResponse = new ObjectMapper().readValue(item.toJSON(), GetCourseResponse.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            Instructor instructorDetails = CommonUtils.getInstructorDetails(instructorId, dynamoDB);
+            if(Objects.nonNull(instructorDetails))
+                courseResponse.setInstructorDetails(instructorDetails);
         }
-        Instructor instructorDetails = getInstructorDetails(instructorId);
-        if(Objects.nonNull(instructorDetails))
-            courseResponse.setInstructorDetails(instructorDetails);
         return courseResponse;
     }
 
-    public Instructor getInstructorDetails(String userId){
-        String[] attributes = {"fullName", "profileImage", "instructorDetails"};
-        GetItemSpec itemSpec = new GetItemSpec()
-                .withPrimaryKey("id", userId)
-                .withAttributesToGet(attributes);
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER).getItem(itemSpec);
-        Instructor instructor = null;
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = new Gson().toJson(item.get("instructorDetails"));
-        try {
-            instructor = objectMapper.readValue(json, Instructor.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        instructor.setInstructorName((String) item.get("fullName"));
-        instructor.setProfileImage((String) item.get("profileImage"));
-        return instructor;
-    }
 }
