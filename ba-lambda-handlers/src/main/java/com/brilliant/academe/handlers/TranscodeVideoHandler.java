@@ -13,7 +13,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.brilliant.academe.util.CommonUtils;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class TranscodeVideoHandler implements RequestHandler<S3Event, String> {
     }
 
     public String execute(S3Event event, Context context){
-        System.out.println("Json: "+new Gson().toJson(event));
+        System.out.println("Json: "+CommonUtils.convertObjectToJson(event));
         context.getLogger().log("Received event: " + event);
         String bucket = event.getRecords().get(0).getS3().getBucket().getName();
         String key = event.getRecords().get(0).getS3().getObject().getKey();

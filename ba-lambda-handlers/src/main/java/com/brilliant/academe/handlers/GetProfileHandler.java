@@ -24,7 +24,8 @@ public class GetProfileHandler implements RequestHandler<APIGatewayProxyRequestE
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         initDynamoDbClient();
         String token = requestEvent.getHeaders().get(HEADER_AUTHORIZATION);
-        return execute(token);
+        Instructor instructor = execute(token);
+        return CommonUtils.setResponseBodyAndCorsHeaders(instructor);
     }
 
     private void initDynamoDbClient() {
@@ -34,13 +35,11 @@ public class GetProfileHandler implements RequestHandler<APIGatewayProxyRequestE
         dynamoDB = new DynamoDB(client);
     }
 
-    private APIGatewayProxyResponseEvent execute(String token) {
+    private Instructor execute(String token) {
         String userId = CommonUtils.getUserFromToken(token);
         Instructor instructorDetails = CommonUtils.getInstructorDetails(userId, dynamoDB);
         if(Objects.isNull(instructorDetails))
             instructorDetails = new Instructor();
-        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
-                .withBody(new Gson().toJson(instructorDetails));
-        return CommonUtils.setCorsHeaders(responseEvent);
+        return instructorDetails;
     }
 }

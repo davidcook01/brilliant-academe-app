@@ -9,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.brilliant.academe.domain.user.CognitoPostConfirmationRequest;
-import com.google.gson.Gson;
+import com.brilliant.academe.util.CommonUtils;
 
 import static com.brilliant.academe.constant.Constant.*;
 
@@ -31,7 +31,7 @@ public class AddUserHandler implements RequestHandler<CognitoPostConfirmationReq
     }
 
     public String execute(CognitoPostConfirmationRequest cognitoPostConfirmationRequest){
-        System.out.println(new Gson().toJson(cognitoPostConfirmationRequest));
+        System.out.println(CommonUtils.convertObjectToJson(cognitoPostConfirmationRequest));
         persistData(cognitoPostConfirmationRequest);
         return STATUS_SUCCESS;
     }

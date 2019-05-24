@@ -28,7 +28,10 @@ public class GetOrderHandler implements RequestHandler<APIGatewayProxyRequestEve
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         initDynamoDbClient();
-        return execute(requestEvent);
+        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
+        String orderId = requestEvent.getPathParameters().get("orderId");
+        GetOrderResponse orderResponse = execute(token, orderId);
+        return CommonUtils.setResponseBodyAndCorsHeaders(orderResponse);
     }
 
     private void initDynamoDbClient() {
@@ -38,10 +41,8 @@ public class GetOrderHandler implements RequestHandler<APIGatewayProxyRequestEve
         dynamoDB = new DynamoDB(client);
     }
 
-    public APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent requestEvent){
-        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
+    public GetOrderResponse execute(String token, String orderId){
         String userId = CommonUtils.getUserFromToken(token);
-        String orderId = requestEvent.getPathParameters().get("orderId");
         String[] attributes = {"id", "orderStatus", "transactionId", "userId"};
         GetItemSpec itemSpec = new GetItemSpec()
                 .withPrimaryKey("id", orderId)
@@ -55,8 +56,6 @@ public class GetOrderHandler implements RequestHandler<APIGatewayProxyRequestEve
                 e.printStackTrace();
             }
         }
-        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
-                .withBody(new Gson().toJson(orderResponse));
-        return CommonUtils.setCorsHeaders(responseEvent);
+        return orderResponse;
     }
 }

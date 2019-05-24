@@ -1,7 +1,5 @@
 package com.brilliant.academe.handlers;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
@@ -13,7 +11,6 @@ import com.brilliant.academe.domain.enrollment.GetEnrolledCourseRequest;
 import com.brilliant.academe.domain.enrollment.GetEnrolledCourseResponse;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.math.BigDecimal;

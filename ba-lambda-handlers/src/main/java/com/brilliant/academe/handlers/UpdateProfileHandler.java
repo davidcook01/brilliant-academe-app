@@ -30,7 +30,9 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         initDynamoDbClient();
         initConfig();
-        return execute(event);
+        String token = event.getHeaders().get(HEADER_AUTHORIZATION);
+        CommonResponse commonResponse = execute(token, event.getBody());
+        return CommonUtils.setResponseBodyAndCorsHeaders(commonResponse);
     }
 
     private void initDynamoDbClient() {
@@ -44,13 +46,12 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
         item = CommonUtils.getConfigInfo(dynamoDB, attributes);
     }
 
-    private APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent event){
-        String token = event.getHeaders().get(HEADER_AUTHORIZATION);
+    private CommonResponse execute(String token, String requestBody){
         String userId = CommonUtils.getUserFromToken(token);
         Instructor instructorMapperDetails = null;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            instructorMapperDetails = objectMapper.readValue(event.getBody(), Instructor.class);
+            instructorMapperDetails = objectMapper.readValue(requestBody, Instructor.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,7 +61,6 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
 
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setMessage(STATUS_FAILED);
-        System.out.println(event.getBody());
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey("id", userId)
                 .withUpdateExpression("set profileImage=:p, instructorDetails=:d")
@@ -69,17 +69,13 @@ public class UpdateProfileHandler implements RequestHandler<APIGatewayProxyReque
                         .withJSON(":d", getInstructorDetails(instructorMapperDetails)));
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_USER).updateItem(updateItemSpec);
         commonResponse.setMessage(STATUS_SUCCESS);
-
-        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent()
-                        .withBody(new Gson().toJson(commonResponse));
-        return CommonUtils.setCorsHeaders(responseEvent);
+        return commonResponse;
     }
 
     private String getInstructorDetails(Instructor instructorMapperDetails){
         Instructor instructorDetails = new Instructor();
         instructorDetails.setDesignation(instructorMapperDetails.getDesignation());
         instructorDetails.setDetailedDescription(instructorMapperDetails.getDetailedDescription());
-        return new Gson().toJson(instructorDetails);
+        return CommonUtils.convertObjectToJson(instructorDetails);
     }
-
 }

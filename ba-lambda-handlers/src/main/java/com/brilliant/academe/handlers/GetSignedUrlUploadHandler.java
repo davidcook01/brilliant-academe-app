@@ -34,7 +34,12 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         initDynamoDbClient();
         initConfig();
-        return execute(requestEvent);
+        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
+        String key = requestEvent.getQueryStringParameters().get("key");
+        String name = requestEvent.getQueryStringParameters().get("name");
+        String type = requestEvent.getQueryStringParameters().get("type");
+        CommonResponse commonResponse = execute(token, key, name, type);
+        return CommonUtils.setResponseBodyAndCorsHeaders(commonResponse);
     }
 
     private void initDynamoDbClient() {
@@ -48,20 +53,12 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
         itemConfig = CommonUtils.getConfigInfo(dynamoDB, attributes);
     }
 
-    public APIGatewayProxyResponseEvent execute(APIGatewayProxyRequestEvent requestEvent){
-        String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
-        String key = requestEvent.getQueryStringParameters().get("key");
-        String name = requestEvent.getQueryStringParameters().get("name");
-        String type = requestEvent.getQueryStringParameters().get("type");
-
+    public CommonResponse execute(String token, String key, String name, String type){
         System.out.println(token+", "+ key+", "+ name+", "+type);
-
         String userId = CommonUtils.getUserFromToken(token);
         Item item = dynamoDB.getTable(Constant.DYNAMODB_TABLE_NAME_USER).getItem("id", userId);
-
         CommonResponse commonResponse = new CommonResponse();
         commonResponse.setMessage(Constant.STATUS_FAILED);
-
         if(Objects.nonNull(item)){
             if(Objects.nonNull(item.get("instructor"))){
                 boolean isInstructor = (Boolean) item.get("instructor");
@@ -91,10 +88,7 @@ public class GetSignedUrlUploadHandler implements RequestHandler<APIGatewayProxy
                 }
             }
         }
-
-        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
-        responseEvent.setBody(new Gson().toJson(commonResponse));
-        return CommonUtils.setCorsHeaders(responseEvent);
+        return commonResponse;
     }
 
     private String getSignedUrl(String bucketName, String originPath, String name, String key){

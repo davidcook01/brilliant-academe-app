@@ -31,6 +31,7 @@ public class DeleteCartHandler implements RequestHandler<CourseCartRequest, Cour
         dynamoDB = new DynamoDB(client);
     }
 
+    @SuppressWarnings("LoopStatementThatDoesntLoop")
     public CourseCartResponse execute(CourseCartRequest request){
         CourseCartResponse response = new CourseCartResponse();
         response.setMessage(STATUS_FAILED);

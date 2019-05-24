@@ -12,7 +12,6 @@ import com.brilliant.academe.domain.course.GetCourseResponse;
 import com.brilliant.academe.domain.user.Instructor;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.Objects;

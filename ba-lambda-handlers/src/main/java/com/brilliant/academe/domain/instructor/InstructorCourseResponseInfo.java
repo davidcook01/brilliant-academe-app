@@ -41,6 +41,8 @@ public class InstructorCourseResponseInfo implements Serializable {
 
     private String coverImage;
 
+    private String tags;
+
     @JsonProperty("resources")
     private List<InstructorCourseSection> sections;
 
@@ -146,5 +148,13 @@ public class InstructorCourseResponseInfo implements Serializable {
 
     public void setSections(List<InstructorCourseSection> sections) {
         this.sections = sections;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 }

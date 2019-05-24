@@ -17,7 +17,6 @@ import com.brilliant.academe.domain.instructor.*;
 import com.brilliant.academe.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Product;
@@ -49,7 +48,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
 
     private Item configItem;
 
-    private String[] attributes = {"cfDistributionName", "stripeSecretKey"};
+    private String[] attributes = {"cfDistributionName", "stripeSecretKey", "s3ContentUploadFolder"};
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -64,13 +63,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         }
         String token = requestEvent.getHeaders().get(Constant.HEADER_AUTHORIZATION);
         InstructorCourseResponse response = execute(token, request);
-        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
-        try {
-            responseEvent.setBody(objectMapper.writeValueAsString(response));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return CommonUtils.setCorsHeaders(responseEvent);
+        return CommonUtils.setResponseBodyAndCorsHeaders(response);
     }
 
     private void initDynamoDbClient() {
@@ -106,41 +99,38 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
 
     private InstructorCourseResponse executeRequest(InstructorCourseRequest request){
         String type = request.getType();
-        if(type.equals(TYPE_COURSE)){
-            return executeCourse(request.getOperation(), request.getCourse());
+        switch (type) {
+            case TYPE_COURSE:
+                return executeCourse(request.getOperation(), request.getCourse());
+            case TYPE_IMAGE:
+                return executeImage(request.getOperation(), request.getCourse());
+            case TYPE_SECTION:
+                return executeSection(request.getOperation(), request.getCourse());
+            case TYPE_LECTURE:
+                return executeLecture(request.getOperation(), request.getCourse());
+            case TYPE_MATERIAL:
+                return executeMaterial(request.getOperation(), request.getCourse());
+            default:
+                return null;
         }
-        if(type.equals(TYPE_IMAGE)){
-            return executeImage(request.getOperation(), request.getCourse());
-        }
-        if(type.equals(TYPE_SECTION)){
-            return executeSection(request.getOperation(), request.getCourse());
-        }
-        if(type.equals(TYPE_LECTURE)){
-            return executeLecture(request.getOperation(), request.getCourse());
-        }
-        if(type.equals(TYPE_MATERIAL)){
-            return executeMaterial(request.getOperation(), request.getCourse());
-        }
-        return null;
     }
 
     private InstructorCourseResponse executeCourse(String operation, InstructorCourse course){
         InstructorCourseResponse response = new InstructorCourseResponse();
         response.setMessage(STATUS_FAILED);
-        if(operation.equals(OPERATION_CREATE)){
-            return createCourse(course, response);
+        switch (operation) {
+            case OPERATION_CREATE:
+                return createCourse(course, response);
+            case OPERATION_UPDATE:
+                return updateCourse(course, response);
+            case OPERATION_GET:
+                return getCourse(course.getCourseId());
+            case OPERATION_SUBMIT:
+                initConfig();
+                return submitCourse(course.getCourseId());
+            default:
+                return response;
         }
-        if(operation.equals(OPERATION_UPDATE)){
-            return updateCourse(course, response);
-        }
-        if(operation.equals(OPERATION_GET)){
-            return getCourse(course.getCourseId());
-        }
-        if(operation.equals(OPERATION_SUBMIT)){
-            initConfig();
-            return submitCourse(course.getCourseId());
-        }
-        return response;
     }
 
     private InstructorCourseResponse createCourse(InstructorCourse course, InstructorCourseResponse response){
@@ -286,6 +276,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         Integer centAmountRounded = centAmount.intValue();
 
         Stripe.apiKey = (String) configItem.get("stripeSecretKey");
+        String skuId = null;
 
         Map<String, Object> productParams = new HashMap<>();
         productParams.put("name", courseName);
@@ -296,33 +287,31 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         Product product = null;
         try {
             product = Product.create(productParams);
+            Map<String, Object> skuParams = new HashMap<>();
+            skuParams.put("product", product.getId());
+            skuParams.put("price", centAmountRounded);
+            skuParams.put("currency", "usd");
+            Map<String, Object> attributesParams = new HashMap<>();
+            attributesParams.put("name", courseName);
+            skuParams.put("attributes", attributesParams);
+            Map<String, Object> inventoryParams = new HashMap<>();
+            inventoryParams.put("type", "infinite");
+            skuParams.put("inventory", inventoryParams);
+            skuParams.put("image", coverImageUrl);
+
+            System.out.println("Image Set in SKU:"+skuParams.get("image"));
+
+            Sku sku = null;
+            try {
+                sku = Sku.create(skuParams);
+                skuId = sku.getId();
+            } catch (StripeException e) {
+                e.printStackTrace();
+            }
         } catch (StripeException e) {
             e.printStackTrace();
         }
-        System.out.println("Product Id:"+ product.getId());
-
-        Map<String, Object> skuParams = new HashMap<>();
-        skuParams.put("product", product.getId());
-        skuParams.put("price", centAmountRounded);
-        skuParams.put("currency", "usd");
-        Map<String, Object> attributesParams = new HashMap<>();
-        attributesParams.put("name", courseName);
-        skuParams.put("attributes", attributesParams);
-        Map<String, Object> inventoryParams = new HashMap<>();
-        inventoryParams.put("type", "infinite");
-        skuParams.put("inventory", inventoryParams);
-        skuParams.put("image", coverImageUrl);
-
-        System.out.println("Image Set in SKU:"+skuParams.get("image"));
-
-        Sku sku = null;
-        try {
-            sku = Sku.create(skuParams);
-        } catch (StripeException e) {
-            e.printStackTrace();
-        }
-        System.out.println("SKUID:"+ sku.getId());
-        return sku.getId();
+        return skuId;
     }
 
     private boolean updateSkuIdAndSubmit(String courseId, String skuId){
@@ -374,13 +363,12 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
 
     private UpdateItemSpec getUpdateItemSpec(InstructorCourse course){
         String coverImage = getCoverImageLocation(course.getCourseId(), course.getCoverImage());
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+        return new UpdateItemSpec()
                 .withPrimaryKey("id", course.getCourseId())
                 .withUpdateExpression("set coverImage = :coverImage, modifiedDate = :modifiedDate")
                 .withValueMap(new ValueMap()
                         .withString(":coverImage", coverImage)
                         .withString(":modifiedDate", CommonUtils.getDateTime()));
-        return updateItemSpec;
     }
 
     private InstructorCourseResponseInfo getCourseDetails(String courseId){
@@ -516,6 +504,34 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 updateSectionDetails(course.getCourseId(), courseDetails.getSections());
                 response.setMessage(STATUS_SUCCESS);
             }
+        }
+        if(operation.equals(OPERATION_DETETE)) {
+            initConfig();
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
+            String sectionId = course.getSections().get(0).getSectionId();
+            String lectureId = course.getSections().get(0).getLectures().get(0).getLectureId();
+            String materialId = course.getSections().get(0).getLectures().get(0).getMaterials().get(0).getMaterialId();
+
+            InstructorCourseSection courseSection = courseDetails.getSections().stream()
+                    .filter(cs -> sectionId.equals(cs.getSectionId()))
+                    .findAny()
+                    .orElse(null);
+
+            InstructorCourseLecture courseLecture = courseSection.getLectures().stream()
+                    .filter(cl -> lectureId.equals(cl.getLectureId()))
+                    .findAny()
+                    .orElse(null);
+
+            InstructorCourseMaterial courseMaterial = courseLecture.getMaterials().stream()
+                    .filter(cm -> materialId.equals(cm.getMaterialId()))
+                    .findAny()
+                    .orElse(null);
+
+            courseLecture.getMaterials().remove(courseMaterial);
+
+            updateSectionDetails(course.getCourseId(), courseDetails.getSections());
+            response.setMessage(STATUS_SUCCESS);
+
         }
         return response;
     }

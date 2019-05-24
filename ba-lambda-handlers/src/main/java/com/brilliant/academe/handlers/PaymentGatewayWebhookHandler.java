@@ -37,7 +37,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
     public Void handleRequest(PaymentGatewayWebhookRequest request, Context context)  {
         initDynamoDbClient();
         initConfig();
-        String stripeJson = new Gson().toJson(request.getEventJson());
+        String stripeJson = CommonUtils.convertObjectToJson(request.getEventJson());
         return execute(stripeJson);
     }
 
@@ -57,7 +57,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
         if(event.getType().equals("checkout.session.completed")){
             StripeCheckoutResponse response = new Gson().fromJson(event.getData().toJson(), StripeCheckoutResponse.class);
             StripeCheckoutEvent checkoutEvent = response.getObject();
-            System.out.println("***"+new Gson().toJson(checkoutEvent));
+            System.out.println("***"+CommonUtils.convertObjectToJson(checkoutEvent));
             String orderId = checkoutEvent.getClient_reference_id();
             String userId = getUserId(orderId);
             String paymentIntentId = checkoutEvent.getPayment_intent();
@@ -68,7 +68,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
             Long amount = 0L;
             try {
                 PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-                paymentIntentJson = new Gson().toJson(paymentIntent);
+                paymentIntentJson = CommonUtils.convertObjectToJson(paymentIntent);
                 amount =  paymentIntent.getAmount();
                 System.out.println("**"+ paymentIntentJson);
                 if(Objects.nonNull(paymentIntent) && Objects.nonNull(paymentIntent.getCharges())
@@ -168,7 +168,7 @@ public class PaymentGatewayWebhookHandler implements RequestHandler<PaymentGatew
     private void updateOrderDetails(StripeCheckoutEvent checkoutEvent, String orderId, String userId, String transactionId, String paymentIntentDeatils, Long amount){
         String orderDetailsJson = "NA";
         if(Objects.nonNull(checkoutEvent))
-            orderDetailsJson = new Gson().toJson(checkoutEvent);
+            orderDetailsJson = CommonUtils.convertObjectToJson(checkoutEvent);
 
         String orderStatus = STATUS_SUCCESS;
         BigDecimal amountInDollars = new BigDecimal(amount).divide(new BigDecimal(100));
