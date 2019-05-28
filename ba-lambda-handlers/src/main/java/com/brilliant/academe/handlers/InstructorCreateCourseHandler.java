@@ -5,12 +5,18 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.CourseCategory;
 import com.brilliant.academe.domain.instructor.*;
@@ -37,6 +43,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
     private static final String TYPE_MATERIAL = "material";
 
     private static final String OPERATION_GET = "get";
+    private static final String OPERATION_GET_ALL = "getAll";
     private static final String OPERATION_SUBMIT = "submit";
     private static final String OPERATION_CREATE = "create";
     private static final String OPERATION_UPDATE = "update";
@@ -48,7 +55,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
 
     private Item configItem;
 
-    private String[] attributes = {"cfDistributionName", "stripeSecretKey", "s3ContentUploadFolder"};
+    private String[] attributes = {"cfDistributionName", "stripeSecretKey", "s3ContentUploadFolder", "s3ImageUploadFolder"};
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -125,12 +132,42 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 return updateCourse(course, response);
             case OPERATION_GET:
                 return getCourse(course.getCourseId());
+            case OPERATION_GET_ALL:
+                return getAllCourse();
             case OPERATION_SUBMIT:
                 initConfig();
                 return submitCourse(course.getCourseId());
             default:
                 return response;
         }
+    }
+
+    private InstructorCourseResponse getAllCourse(){
+        String userId = (String) instructorItem.get("id");
+        Index index = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE).getIndex("instructorId-index");
+        QuerySpec querySpec = new QuerySpec()
+                .withKeyConditionExpression("instructorId = :v_instructor_id")
+                .withValueMap(new ValueMap()
+                        .withString(":v_instructor_id", userId));
+
+        ItemCollection<QueryOutcome> courseItemsList = index.query(querySpec);
+        List<InstructorCourseResponseInfo> instructorCourses = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        for(Item courseItem: courseItemsList){
+            try {
+                instructorCourses.add(objectMapper.readValue(courseItem.toJSON(), InstructorCourseResponseInfo.class));
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        InstructorCourseResponse instructorCourseResponse = new InstructorCourseResponse();
+        instructorCourseResponse.setCourses(filterUniqueCourses(instructorCourses));
+        return instructorCourseResponse;
+    }
+
+    private List<InstructorCourseResponseInfo> filterUniqueCourses(List<InstructorCourseResponseInfo> courseResponseInfos){
+        Set<InstructorCourseResponseInfo> uniqueCourses = new HashSet<>(courseResponseInfos);
+        return new ArrayList<>(uniqueCourses);
     }
 
     private InstructorCourseResponse createCourse(InstructorCourse course, InstructorCourseResponse response){
@@ -205,7 +242,6 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
         for(Item item: items){
             String updateCourseId = (String) item.get("id");
             String updateCategoryId = (String) item.get("categoryId");
-            //System.out.println("Update Course Id:" +updateCourseId + ", Update Category Id:"+ updateCategoryId);
 
             UpdateItemSpec updateItemSpecCourse = new UpdateItemSpec()
                     .withPrimaryKey("id", updateCourseId, "categoryId", updateCategoryId)
@@ -421,10 +457,36 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             updateSectionDetails(course.getCourseId(), courseDetails.getSections());
             response.setMessage(STATUS_SUCCESS);
             response.setId(sectionId);
-        }
-        if(operation.equals(OPERATION_GET)) {
+        } else if(operation.equals(OPERATION_GET)) {
             InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             response.setSections(courseDetails.getSections());
+            response.setMessage(STATUS_SUCCESS);
+        }else if(operation.equals(OPERATION_DETETE)) {
+            initConfig();
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
+            String sectionId = course.getSections().get(0).getSectionId();
+
+            InstructorCourseSection courseSection = courseDetails.getSections().stream()
+                    .filter(cs -> sectionId.equals(cs.getSectionId())).findAny().orElse(null);
+
+            if(Objects.nonNull(courseSection) && Objects.nonNull(courseSection.getLectures())
+                    && courseSection.getLectures().size() > 0){
+                for(InstructorCourseLecture cl: courseSection.getLectures()){
+                    if(Objects.nonNull(cl.getMaterials()) && cl.getMaterials().size() > 0){
+                        for(InstructorCourseMaterial cm: cl.getMaterials()){
+                            String extension = getFileExtenstion(cm.getMaterialFile());
+                            deleteObjectFromS3(course.getCourseId(), cm.getMaterialId(), extension, TYPE_MATERIAL);
+                        }
+                    }
+                    deleteObjectFromS3(course.getCourseId(), cl.getLectureId(), Constant.HLS_FORMAT, TYPE_LECTURE);
+                }
+            }
+
+            courseDetails.getSections().remove(courseSection);
+            if(courseDetails.getSections().size() == 0){
+                courseDetails.setSections(null);
+            }
+            updateSectionDetails(course.getCourseId(), courseDetails.getSections());
             response.setMessage(STATUS_SUCCESS);
         }
         return response;
@@ -437,17 +499,12 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             String lectureId = UUID.randomUUID().toString();
             response.setMessage(STATUS_SUCCESS);
             response.setId(lectureId);
-        }
-        if(operation.equals(OPERATION_UPDATE)) {
+        }else if(operation.equals(OPERATION_UPDATE)) {
             InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
             String sectionId = course.getSections().get(0).getSectionId();
             InstructorCourseSection courseSection = courseDetails.getSections().stream()
-                    .filter(cs -> sectionId.equals(cs.getSectionId()))
-                    .findAny()
-                    .orElse(null);
-
+                    .filter(cs -> sectionId.equals(cs.getSectionId())).findAny().orElse(null);
             courseDetails.getSections().remove(courseSection);
-
             if(Objects.nonNull(courseSection)){
                 if(Objects.isNull(courseSection.getLectures()) || courseSection.getLectures().size() == 0){
                     courseSection.setLectures(new ArrayList<>());
@@ -459,6 +516,34 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 updateSectionDetails(course.getCourseId(), courseDetails.getSections());
                 response.setMessage(STATUS_SUCCESS);
             }
+        } else if(operation.equals(OPERATION_DETETE)) {
+            initConfig();
+            InstructorCourseResponseInfo courseDetails = getCourseDetails(course.getCourseId());
+            String sectionId = course.getSections().get(0).getSectionId();
+            String lectureId = course.getSections().get(0).getLectures().get(0).getLectureId();
+
+            InstructorCourseSection courseSection = courseDetails.getSections().stream()
+                    .filter(cs -> sectionId.equals(cs.getSectionId())).findAny().orElse(null);
+
+            InstructorCourseLecture courseLecture = courseSection.getLectures().stream()
+                    .filter(cl -> lectureId.equals(cl.getLectureId())).findAny().orElse(null);
+
+           if(Objects.nonNull(courseLecture) && Objects.nonNull(courseLecture.getMaterials())
+                   && courseLecture.getMaterials().size() > 0){
+               for(InstructorCourseMaterial cm: courseLecture.getMaterials()){
+                   String extension = getFileExtenstion(cm.getMaterialFile());
+                   deleteObjectFromS3(course.getCourseId(), cm.getMaterialId(), extension, TYPE_MATERIAL);
+               }
+           }
+
+            courseSection.getLectures().remove(courseLecture);
+            if(courseSection.getLectures().size() == 0){
+                courseSection.setLectures(null);
+            }
+
+            updateSectionDetails(course.getCourseId(), courseDetails.getSections());
+            deleteObjectFromS3(course.getCourseId(), lectureId, Constant.HLS_FORMAT, TYPE_LECTURE);
+            response.setMessage(STATUS_SUCCESS);
         }
         return response;
     }
@@ -476,16 +561,10 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             String sectionId = course.getSections().get(0).getSectionId();
             String lectureId = course.getSections().get(0).getLectures().get(0).getLectureId();
             InstructorCourseSection courseSection = courseDetails.getSections().stream()
-                    .filter(cs -> sectionId.equals(cs.getSectionId()))
-                    .findAny()
-                    .orElse(null);
-
+                    .filter(cs -> sectionId.equals(cs.getSectionId())).findAny().orElse(null);
             courseDetails.getSections().remove(courseSection);
-
             InstructorCourseLecture courseLecture = courseSection.getLectures().stream()
-                    .filter(cl -> lectureId.equals(cl.getLectureId()))
-                    .findAny()
-                    .orElse(null);
+                    .filter(cl -> lectureId.equals(cl.getLectureId())).findAny().orElse(null);
 
             if(Objects.nonNull(courseLecture)){
                 if(Objects.isNull(courseLecture.getMaterials()) || courseLecture.getMaterials().size() == 0){
@@ -511,28 +590,84 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             String sectionId = course.getSections().get(0).getSectionId();
             String lectureId = course.getSections().get(0).getLectures().get(0).getLectureId();
             String materialId = course.getSections().get(0).getLectures().get(0).getMaterials().get(0).getMaterialId();
+            String materialFile = course.getSections().get(0).getLectures().get(0).getMaterials().get(0).getMaterialFile();
 
             InstructorCourseSection courseSection = courseDetails.getSections().stream()
-                    .filter(cs -> sectionId.equals(cs.getSectionId()))
-                    .findAny()
-                    .orElse(null);
+                    .filter(cs -> sectionId.equals(cs.getSectionId())).findAny().orElse(null);
 
             InstructorCourseLecture courseLecture = courseSection.getLectures().stream()
-                    .filter(cl -> lectureId.equals(cl.getLectureId()))
-                    .findAny()
-                    .orElse(null);
+                    .filter(cl -> lectureId.equals(cl.getLectureId())).findAny().orElse(null);
 
             InstructorCourseMaterial courseMaterial = courseLecture.getMaterials().stream()
-                    .filter(cm -> materialId.equals(cm.getMaterialId()))
-                    .findAny()
-                    .orElse(null);
-
+                    .filter(cm -> materialId.equals(cm.getMaterialId())).findAny().orElse(null);
             courseLecture.getMaterials().remove(courseMaterial);
-
+            if(courseLecture.getMaterials().size() == 0){
+                courseLecture.setMaterials(null);
+            }
             updateSectionDetails(course.getCourseId(), courseDetails.getSections());
+            String extension = getFileExtenstion(materialFile);
+            deleteObjectFromS3(course.getCourseId(), materialId, extension, TYPE_MATERIAL);
             response.setMessage(STATUS_SUCCESS);
-
         }
         return response;
+    }
+
+    private String getFileExtenstion(String materialFile){
+        Optional<String> s = Optional.ofNullable(materialFile)
+                .filter(f -> f.contains("."))
+                .map(f -> f.substring(materialFile.lastIndexOf(".") + 1));
+        String extension = null;
+        if(s.isPresent()){
+            extension = s.get();
+        }
+        return extension;
+    }
+
+    private void deleteObjectFromS3(String courseId, String id, String format, String type){
+        String clientRegion = Constant.REGION.US_EAST_1.getName();
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(clientRegion).build();
+        String keyName = null;
+        String bucketName = (String) configItem.get("s3ContentUploadFolder");
+
+        if(type.equals(TYPE_MATERIAL)){
+            keyName = CF_VIDEOS_ORIGIN_PATH + "/" + courseId + "/" + id + "." + format;
+            CommonUtils.deleteS3Object(s3Client, bucketName, keyName);
+        }
+
+        if(type.equals(TYPE_LECTURE)){
+            String prefix = CF_VIDEOS_ORIGIN_PATH + "/" + courseId + "/";
+            ListObjectsRequest listObjectsRequest = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+            List<String> keys = new ArrayList<>();
+            ObjectListing objects = s3Client.listObjects(listObjectsRequest);
+            for (;;) {
+                List<S3ObjectSummary> summaries = objects.getObjectSummaries();
+                if (summaries.size() < 1) {
+                    break;
+                }
+                summaries.forEach(s -> keys.add(s.getKey()));
+                objects = s3Client.listNextBatchOfObjects(objects);
+            }
+
+            for(String key: keys){
+                if(key.contains(prefix + id)){
+                    CommonUtils.deleteS3Object(s3Client, bucketName, key);
+                }
+            }
+        }
+
+        if(type.equals(TYPE_IMAGE)){
+            String imageBucketName = (String) configItem.get("s3ImageUploadFolder");
+            String prefix = CF_IMAGES_ORIGIN_PATH + "/" + courseId + "/";
+            ListObjectsRequest listObjectsRequest = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+            ObjectListing objects = s3Client.listObjects(listObjectsRequest);
+            for (;;) {
+                List<S3ObjectSummary> summaries = objects.getObjectSummaries();
+                if (summaries.size() < 1) {
+                    break;
+                }
+                summaries.forEach(s -> CommonUtils.deleteS3Object(s3Client, imageBucketName, s.getKey()));
+                objects = s3Client.listNextBatchOfObjects(objects);
+            }
+        }
     }
 }

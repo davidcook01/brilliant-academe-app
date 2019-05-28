@@ -14,6 +14,7 @@ public class InstructorCourseResponse implements Serializable {
     private String id;
     private InstructorCourseResponseInfo course;
     private List<InstructorCourseSection> sections;
+    private List<InstructorCourseResponseInfo> courses;
 
     public String getId() {
         return id;
@@ -45,5 +46,13 @@ public class InstructorCourseResponse implements Serializable {
 
     public void setSections(List<InstructorCourseSection> sections) {
         this.sections = sections;
+    }
+
+    public List<InstructorCourseResponseInfo> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(List<InstructorCourseResponseInfo> courses) {
+        this.courses = courses;
     }
 }

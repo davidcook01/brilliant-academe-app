@@ -28,5 +28,6 @@ public class Constant {
     public static final String STATUS_NO = "N";
     public static final String STATUS_YES = "Y";
     public static final String HLS_M3U8_FORMAT = "_hls.m3u8";
+    public static final String HLS_FORMAT = "_hls";
 
 }

@@ -8,6 +8,8 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.brilliant.academe.constant.Constant;
 import com.brilliant.academe.domain.course.GetCourseLectureResponse;
 import com.brilliant.academe.domain.user.Instructor;
@@ -336,5 +338,11 @@ public class CommonUtils {
     public static String convertObjectToJson(Object object){
         return new Gson().toJson(object);
     }
+
+
+    public static void deleteS3Object(AmazonS3 s3Client, String bucketName, String keyName){
+        s3Client.deleteObject(new DeleteObjectRequest(bucketName, keyName));
+    }
+
 
 }
