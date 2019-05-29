@@ -38,11 +38,15 @@ public class AddCartHandler implements RequestHandler<CourseCartRequest, CourseC
 
     private CourseCartResponse execute(CourseCartRequest request){
         String userId = CommonUtils.getUserFromToken(request.getToken());
+        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", request.getCourseId());
+        String skuId = (String) item.get("skuId");
+        BigDecimal amount = (BigDecimal) item.get("discountedPrice");
+
         ItemCollection<QueryOutcome> userInprocessCartItems = CommonUtils.getUserInprocessCart(userId, dynamoDB);
 
         String orderId = null;
-        for(Item item: userInprocessCartItems){
-            orderId = (String) item.get("orderId");
+        for(Item inProcessItem: userInprocessCartItems){
+            orderId = (String) inProcessItem.get("orderId");
             break;
         }
 
@@ -50,9 +54,6 @@ public class AddCartHandler implements RequestHandler<CourseCartRequest, CourseC
             orderId = UUID.randomUUID().toString();
         }
 
-        Item item = dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).getItem("id", request.getCourseId());
-        String skuId = (String) item.get("skuId");
-        BigDecimal amount = (BigDecimal) item.get("discountedPrice");
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_ORDER_CART).putItem(new PutItemSpec().withItem(new Item()
                 .withString("orderId", orderId)
                 .withString("userId", userId)

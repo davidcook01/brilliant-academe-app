@@ -18,7 +18,7 @@ public class InstructorCourseLecture implements Serializable {
     private String lectureLink;
     private Integer lectureOrder;
     private BigDecimal lectureDuration;
-    private boolean isPreviewAvailable;
+    private boolean previewAvailable;
     private List<InstructorCourseMaterial> materials;
 
     public String getLectureId() {
@@ -70,11 +70,11 @@ public class InstructorCourseLecture implements Serializable {
     }
 
     public boolean isPreviewAvailable() {
-        return isPreviewAvailable;
+        return previewAvailable;
     }
 
     public void setPreviewAvailable(boolean previewAvailable) {
-        isPreviewAvailable = previewAvailable;
+        this.previewAvailable = previewAvailable;
     }
 
     public List<InstructorCourseMaterial> getMaterials() {
