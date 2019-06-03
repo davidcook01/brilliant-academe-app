@@ -201,7 +201,7 @@ public class CommonUtils {
                 .withFilterExpression("cartStatus = :v_cart_status")
                 .withValueMap(new ValueMap()
                         .withString(":v_user_id", userId)
-                        .withString(":v_cart_status", STATUS_IN_PROCESS)).withConsistentRead(true);
+                        .withString(":v_cart_status", STATUS_IN_PROCESS));
         return  index.query(querySpec);
     }
 

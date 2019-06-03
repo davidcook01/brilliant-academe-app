@@ -357,7 +357,7 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
                 .withValueMap(new ValueMap()
                         .withString(":skuId", skuId)
                         .withString(":submitted", STATUS_YES)
-                        .withString(":reviewed", STATUS_YES) //TODO remove this line
+                        //.withString(":reviewed", STATUS_YES) //TODO remove this line
                         .withString(":modifiedDate", CommonUtils.getDateTime()));
         dynamoDB.getTable(DYNAMODB_TABLE_NAME_COURSE_RESOURCE).updateItem(updateItemSpecCourse);
         return true;
