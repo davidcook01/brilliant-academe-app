@@ -20,7 +20,6 @@ public class LookupMasterHandler implements RequestHandler<Void, LookupMasterRes
 
     @Override
     public LookupMasterResponse handleRequest(Void request, Context context) {
-        System.out.println(new Gson().toJson(context));
         this.initDynamoDbClient();
         return execute();
     }
