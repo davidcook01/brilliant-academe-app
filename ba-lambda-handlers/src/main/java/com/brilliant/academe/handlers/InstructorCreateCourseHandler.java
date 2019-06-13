@@ -375,7 +375,6 @@ public class InstructorCreateCourseHandler implements RequestHandler<APIGatewayP
             for(Item item: items){
                 String updateCourseId = (String) item.get("id");
                 String updateCategoryId = (String) item.get("categoryId");
-                //System.out.println("Update Course Id:" +updateCourseId + ", Update Category Id:"+ updateCategoryId);
 
                 String coverImage = getCoverImageLocation(course.getCourseId(), course.getCoverImage());
                 UpdateItemSpec updateItemSpecCourse = new UpdateItemSpec()
